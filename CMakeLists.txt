@@ -63,9 +63,9 @@ target_link_libraries(
 
 # --- Build Executables ---
 if (NOT DEFINED INSTALL_NAVTOOLS_EXAMPLES OR NOT INSTALL_NAVTOOLS_EXAMPLES)
-    message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is false${Reset}")
+    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is false${Reset}")
 else()
-    message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is true${Reset}")
+    # message(STATUS "${BoldCyan}INSTALL_NAVTOOLS_EXAMPLES is true${Reset}")
 
     add_executable(test_frames examples/test_frames.cpp)
     target_link_libraries(test_frames PUBLIC ${PROJECT_NAME})

@@ -23,21 +23,17 @@ namespace navtools {
 //* ===== Physical Constants =================================================================== *//
 
 template <typename T = double>
-inline constexpr std::complex<T> COMPLEX_I{static_cast<T>(0), static_cast<T>(1)};  //! imaginary value
-template <typename T = double>                                             //
-inline constexpr T PI = std::numbers::pi_v<T>;                             //! pi
-template <typename T = double>                                             //
-inline constexpr T HALF_PI = std::numbers::pi_v<T> / static_cast<T>(2);    //! pi/2
-template <typename T = double>                                             //
-inline constexpr T TWO_PI = static_cast<T>(2) * std::numbers::pi_v<T>;     //! 2*pi
-template <typename T = double>                                             //
-inline constexpr T PI_SQU = std::pow(std::numbers::pi_v<T>, 2);            //! pi^2
-template <typename T = double>                                             //
-inline constexpr T SQRT_PI = std::sqrt(std::numbers::pi_v<T>);             //! sqrt(pi)
-template <typename T = double>                                             //
-inline constexpr T RAD2DEG = 180.0 / std::numbers::pi_v<T>;                //! radians to degrees
-template <typename T = double>                                             //
-inline constexpr T DEG2RAD = std::numbers::pi_v<T> / 180.0;                //! degrees to radians
+inline constexpr std::complex<T> COMPLEX_I{
+    static_cast<T>(0), static_cast<T>(1)};      //! imaginary value
+template <typename T = double>                  //
+inline constexpr T PI = std::numbers::pi_v<T>;  //! pi
+// DEFINE_FP_CONSTANT(PI, 3.141592653589793238462643383279502884);  //! pi
+DEFINE_FP_CONSTANT(HALF_PI, 0.5 * PI<T>);       //! pi/2
+DEFINE_FP_CONSTANT(TWO_PI, 2.0 * PI<T>);        //! 2*pi
+DEFINE_FP_CONSTANT(PI_SQU, PI<T>* PI<T>);       //! pi^2
+DEFINE_FP_CONSTANT(SQRT_PI, std::sqrt(PI<T>));  //! sqrt(pi)
+DEFINE_FP_CONSTANT(RAD2DEG, 180.0 / PI<T>);     //! radians to degrees
+DEFINE_FP_CONSTANT(DEG2RAD, PI<T> / 180.0);     //! degrees to radians
 template <typename T = double>
 inline static const Vec3<T> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};
 template <typename T = double>
@@ -45,12 +41,12 @@ inline static const Vec3<T> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};
 
 template <int Numerator, int Denominator = 1, typename T = double>
 constexpr T PiFraction() {
-    return static_cast<T>(Numerator) * PI<T> / static_cast<T>(Denominator);
+  return static_cast<T>(Numerator) * PI<T> / static_cast<T>(Denominator);
 }
 
 template <int Numerator, int Denominator = 1, typename T = double>
 constexpr T Fraction() {
-    return static_cast<T>(Numerator) / static_cast<T>(Denominator);
+  return static_cast<T>(Numerator) / static_cast<T>(Denominator);
 }
 
 DEFINE_FP_CONSTANT(LIGHT_SPEED, 299792458.0);  //! speed of light [m/s]
@@ -63,7 +59,6 @@ DEFINE_FP_CONSTANT(MINUTES_PER_DAY, 1440.0);   //! minutes per day
 
 DEFINE_FP_CONSTANT(GRAVITY, 9.80665);     //! Earth's gravity constant [m/s^2]
 DEFINE_FP_CONSTANT(RE, 6378.1363e3);      //! Earth equatorial radius [m]
-DEFINE_FP_CONSTANT(WGS84_MU, 3.986004415e14);   //! (mu) Gravitational constant [m^3/s^2]
 DEFINE_FP_CONSTANT(J2, 1.0826269e-03);    //! Earth second zonal harmonic coefficient
 DEFINE_FP_CONSTANT(J3, -2.5323000e-06);   //! Earth third zonal harmonic coefficient
 DEFINE_FP_CONSTANT(J4, -1.6204000e-06);   //! Earth fourth zonal harmonic coefficient
@@ -71,6 +66,8 @@ DEFINE_FP_CONSTANT(F, -4.442807633e-10);  //! Relativistic coefficient
 
 //* ===== WGS84 Models ========================================================================= *//
 
+// DEFINE_FP_CONSTANT(WGS84_MU, 3.986004415e14);     //! (mu) Gravitational constant [m^3/s^2]
+DEFINE_FP_CONSTANT(WGS84_MU, 3.986005e14);
 DEFINE_FP_CONSTANT(WGS84_R0, 6378137.0);          //! WGS84 Equatorial radius (semi-major axis) [m]
 DEFINE_FP_CONSTANT(WGS84_RP, 6356752.314245);     //! WGS84 Polar radius (semi-minor axis) [m]
 DEFINE_FP_CONSTANT(WGS84_E, 0.0818191908429654);  //! WGS84 eccentricity
@@ -81,24 +78,25 @@ template <typename T = double>
 inline static const Vec3<T> WGS84_OMEGA_VEC{0.0, 0.0, WGS84_OMEGA<T>};
 template <typename T = double>
 inline static const Mat3x3<T> WGS84_OMEGA_SKEW{
-        {0.0, -WGS84_OMEGA<T>, 0.0},
-        {WGS84_OMEGA<T>, 0.0, 0.0},
-        {0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0},
+    {0.0, 0.0, +WGS84_OMEGA<T>},
+    {0.0, -WGS84_OMEGA<T>, 0.0},
 };
 
 //* ===== SGP Models =========================================================================== *//
 
-DEFINE_FP_CONSTANT(SGP_AE, 1.0);                      // distance per earth radii
-DEFINE_FP_CONSTANT(SGP_XKMPER, 6378.135);             // km per earth radii
-DEFINE_FP_CONSTANT(SGP_S, 1.01222928);                // s
-DEFINE_FP_CONSTANT(SGP_QOMS2T, 1.88027916e-9);        // (q0 - s)^4
-DEFINE_FP_CONSTANT(SGP_XKE, 7.43669161331734132e-2);  // sqrt(G*M)
-template <typename T = double>                        //
-inline constexpr T SGP_CK2 = 1.0 / 2.0 * J2<T> * std::pow(SGP_AE<T>, 2);   // 1/2 * J2 * a_E^2
-template <typename T = double>                                             //
-inline constexpr T SGP_CK4 = -3.0 / 8.0 * J4<T> * std::pow(SGP_AE<T>, 4);  // -3/8 * J4 * a_E^4
-template <typename T = double>                                             //
-inline constexpr T SGP_A3OVK2 = -J3<T> / SGP_CK2<T> * SGP_AE<T> * std::pow(SGP_AE<T>, 2);  //
+DEFINE_FP_CONSTANT(SGP_AE, 1.0);                                         // distance per earth radii
+DEFINE_FP_CONSTANT(SGP_XKMPER, 6378.135);                                // km per earth radii
+DEFINE_FP_CONSTANT(SGP_S, 1.01222928);                                   // s
+DEFINE_FP_CONSTANT(SGP_QOMS2T, 1.88027916e-9);                           // (q0 - s)^4
+DEFINE_FP_CONSTANT(SGP_XKE, 7.43669161331734132e-2);                     // sqrt(G*M)
+template <typename T = double>                                           //
+inline constexpr T SGP_CK2 = 1.0 / 2.0 * J2<T> * SGP_AE<T> * SGP_AE<T>;  // 1/2 * J2 * a_E^2
+template <typename T = double>                                           //
+inline constexpr T SGP_CK4 =
+    -3.0 / 8.0 * J4<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T>;  // -3/8 * J4 * a_E^4
+template <typename T = double>                                           //
+inline constexpr T SGP_A3OVK2 = -J3<T> / SGP_CK2<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T>;  //
 
 }  // namespace navtools
 
