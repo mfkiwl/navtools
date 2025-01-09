@@ -26,8 +26,8 @@ namespace navtools {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
-template <typename Float = double>
-void euler2quat(Vec4<Float> &q, const Vec3<Float> &e, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+void euler2quat(Vec4<Float> &q, const Vec3<Float> &e) {
     Vec3<Float> x = e / 2.0;
     Float Sr = std::sin(x(0));
     Float Sp = std::sin(x(1));
@@ -37,21 +37,23 @@ void euler2quat(Vec4<Float> &q, const Vec3<Float> &e, const std::string frame = 
     Float b = Cp * Sr;
     Float c = Sp * Sr;
     Float d = Cp * Cr;
-    if (frame == "ned") {
+    if constexpr (IsNed) {
+        // ned frame
         Float Cy = std::cos(x(2));
         Float Sy = std::sin(x(2));
         q << Cy * d + Sy * c, Cy * b - Sy * a, Cy * a + Sy * b, Sy * d - Cy * c;
-    } else if (frame == "enu") {
+    } else {
+        // enu frame
         Float Cy_pio4 = std::cos(x(2) + PI<Float> / 4.0);
         Float Sy_pio4 = std::sin(x(2) + PI<Float> / 4.0);
         q << -a * Cy_pio4 - b * Sy_pio4, -c * Cy_pio4 + d * Sy_pio4, c * Sy_pio4 + d * Cy_pio4,
                 a * Sy_pio4 - b * Cy_pio4;
     }
 }
-template <typename Float = double>
-Vec4<Float> euler2quat(const Vec3<Float> &e, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+Vec4<Float> euler2quat(const Vec3<Float> &e) {
     Vec4<Float> q;
-    euler2quat(q, e, frame);
+    euler2quat<IsNed, Float>(q, e);
     return q;
 }
 
@@ -61,21 +63,21 @@ Vec4<Float> euler2quat(const Vec3<Float> &e, const std::string frame = "ned") {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
-template <typename Float = double>
-void euler2dcm(Mat3x3<Float> &R, const Vec3<Float> &e, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+void euler2dcm(Mat3x3<Float> &R, const Vec3<Float> &e) {
     Float Sr = std::sin(e(0));
     Float Sp = std::sin(e(1));
     Float Sy = std::sin(e(2));
     Float Cr = std::cos(e(0));
     Float Cp = std::cos(e(1));
     Float Cy = std::cos(e(2));
-    if (frame == "ned") {
+    if constexpr (IsNed) {
         // clang-format off
         R << Cp * Cy, Sr * Sp * Cy - Cr * Sy, Cr * Sp * Cy + Sr * Sy,
              Cp * Sy, Sr * Sp * Sy + Cr * Cy, Cr * Sp * Sy - Cy * Sr,
                  -Sp,                Cp * Sr,                Cp * Cr;
         // clang-format on
-    } else if (frame == "enu") {
+    } else {
         // clang-format off
         R << Cp * Sy, Sr * Sp * Sy + Cr * Cy, Cr * Sp * Sy - Sr * Cy,
              Cp * Cy, Sr * Sp * Cy - Cr * Sy, Cr * Sp * Cy + Sr * Sy,
@@ -83,10 +85,10 @@ void euler2dcm(Mat3x3<Float> &R, const Vec3<Float> &e, const std::string frame =
         // clang-format on
     }
 }
-template <typename Float = double>
-Mat3x3<Float> euler2dcm(const Vec3<Float> &e, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+Mat3x3<Float> euler2dcm(const Vec3<Float> &e) {
     Mat3x3<Float> R;
-    euler2dcm(R, e, frame);
+    euler2dcm<IsNed, Float>(R, e);
     return R;
 }
 
@@ -96,26 +98,26 @@ Mat3x3<Float> euler2dcm(const Vec3<Float> &e, const std::string frame = "ned") {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <typename Float = double>
-void quat2euler(Vec3<Float> &e, const Vec4<Float> &q, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+void quat2euler(Vec3<Float> &e, const Vec4<Float> &q) {
     Float w = q(0);
     Float x = q(1);
     Float y = q(2);
     Float z = q(3);
-    if (frame == "ned") {
+    if constexpr (IsNed) {
         e(0) = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
         e(1) = std::asin(2.0 * (w * y - x * z));
         e(2) = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-    } else if (frame == "enu") {
+    } else {
         e(0) = PI<Float> + std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
         e(1) = -std::asin(2.0 * (w * y - x * z));
         e(2) = HALF_PI<Float> - std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
     }
 }
-template <typename Float = double>
-Vec3<Float> quat2euler(const Vec4<Float> &q, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+Vec3<Float> quat2euler(const Vec4<Float> &q) {
     Vec3<Float> e;
-    quat2euler(e, q, frame);
+    quat2euler<IsNed, Float>(e, q);
     return e;
 }
 
@@ -152,22 +154,22 @@ Mat3x3<Float> quat2dcm(const Vec4<Float> &q) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <typename Float = double>
-void dcm2euler(Vec3<Float> &e, const Mat3x3<Float> &R, const std::string frame = "ned") {
-    if (frame == "ned") {
+template <bool IsNed = true, typename Float = double>
+void dcm2euler(Vec3<Float> &e, const Mat3x3<Float> &R) {
+    if constexpr (IsNed) {
         e(0) = std::atan2(R(2, 1), R(2, 2));
         e(1) = -std::asin(R(2, 0));
         e(2) = std::atan2(R(1, 0), R(0, 0));
-    } else if (frame == "enu") {
+    } else {
         e(0) = std::atan2(-R(2, 1), -R(2, 2));
         e(1) = std::asin(R(2, 0));
         e(2) = std::atan2(R(0, 0), R(1, 0));
     }
 }
-template <typename Float = double>
-Vec3<Float> dcm2euler(const Mat3x3<Float> &R, const std::string frame = "ned") {
+template <bool IsNed = true, typename Float = double>
+Vec3<Float> dcm2euler(const Mat3x3<Float> &R) {
     Vec3<Float> e;
-    dcm2euler(e, R, frame);
+    dcm2euler<IsNed, Float>(e, R);
     return e;
 }
 

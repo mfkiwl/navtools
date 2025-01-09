@@ -28,10 +28,10 @@ int main() {
     Vec3<double> starting_e{0.0, 5.0, -30.0};
     starting_e *= DEG2RAD<double>;
 
-    Vec4<double> qenu = euler2quat(starting_e, "enu");
-    Vec4<double> qned = euler2quat(starting_e, "ned");
-    Mat3x3<double> Renu = euler2dcm(starting_e, "enu");
-    Mat3x3<double> Rned = euler2dcm(starting_e, "ned");
+    Vec4<double> qenu = euler2quat<true,double>(starting_e);
+    Vec4<double> qned = euler2quat<false,double>(starting_e);
+    Mat3x3<double> Renu = euler2dcm<true,double>(starting_e);
+    Mat3x3<double> Rned = euler2dcm<false,double>(starting_e);
 
     std::cout << BYEL << "#####* TESTING ATTITUDE TRANSFORMATIONS *#####" << RST << std::endl
               << std::endl;
@@ -56,10 +56,10 @@ int main() {
     std::cout << "q_enu from C_enu = " << R2qenu << std::endl;
     std::cout << "q_ned from C_ned = " << R2qned << std::endl << std::endl;
 
-    Vec3<double> e_Renu = dcm2euler(q2Renu, "enu");
-    Vec3<double> e_Rned = dcm2euler(q2Rned, "ned");
-    Vec3<double> e_qenu = quat2euler(R2qenu, "enu");
-    Vec3<double> e_qned = quat2euler(R2qned, "ned");
+    Vec3<double> e_Renu = dcm2euler<true,double>(q2Renu);
+    Vec3<double> e_Rned = dcm2euler<false,double>(q2Rned);
+    Vec3<double> e_qenu = quat2euler<true,double>(R2qenu);
+    Vec3<double> e_qned = quat2euler<false,double>(R2qned);
 
     std::cout << "e from q_enu = " << e_qenu.transpose() << std::endl;
     std::cout << "e from q_ned = " << e_qned.transpose() << std::endl;

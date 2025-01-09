@@ -27,24 +27,29 @@ echo -e "${BoldMagenta}-- BUILDING NAVTOOLS${Reset}";
 # -DCMAKE_C_COMPILER=/usr/local/gcc-14.1.0/bin/gcc-14.1.0 \
 # -DCMAKE_CXX_COMPILER=/usr/local/gcc-14.1.0/bin/g++-14.1.0 \
 
+build_type='Debug'
+c_compiler='clang'
+cpp_compiler='clang++'
+build_examples='True'
+
 case "$OSTYPE" in
   linux*)
     echo -e "${BoldMagenta}-- OS: linux${Reset}";
     cmake .. \
-        -DCMAKE_C_COMPILER=/usr/local/gcc-14.1.0/bin/gcc-14.1.0 \
-        -DCMAKE_CXX_COMPILER=/usr/local/gcc-14.1.0/bin/g++-14.1.0 \
-        -DINSTALL_NAVTOOLS_EXAMPLES=True \
+        -DCMAKE_C_COMPILER=$c_compiler \
+        -DCMAKE_CXX_COMPILER=$cpp_compiler \
+        -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_BUILD_TYPE=$build_type
         ;;
   darwin*)
     echo -e "${BoldMagenta}-- OS: mac${Reset}"; 
     cmake .. \
-        -DCMAKE_C_COMPILER=clang-17 \
-        -DCMAKE_CXX_COMPILER=clang++-17 \
-        -DINSTALL_NAVTOOLS_EXAMPLES=True \
+        -DCMAKE_C_COMPILER=$c_compiler \
+        -DCMAKE_CXX_COMPILER=$cpp_compiler \
+        -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_BUILD_TYPE=$build_type
         ;;
   msys*)
     echo -e "${BoldMagenta}-- OS: windows${Reset}";
@@ -52,9 +57,9 @@ case "$OSTYPE" in
         -G "MinGW Makefiles" \
         -DCMAKE_CXX_COMPILER=C:/MinGW/bin/g++.exe \
         -DCMAKE_C_COMPILER=C:/MinGW/bin/gcc.exe \
-        -DINSTALL_NAVTOOLS_EXAMPLES=True \
+        -DINSTALL_NAVTOOLS_EXAMPLES=$build_examples \
         -DCMAKE_INSTALL_PREFIX=../build \
-        -DCMAKE_BUILD_TYPE=Debug
+        -DCMAKE_BUILD_TYPE=$build_type
         ;;
   solaris*)
     echo -e "${BoldMagenta}-- OS: solaris${Reset}";;
