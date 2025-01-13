@@ -15,9 +15,9 @@
 
 #include <Eigen/Dense>
 #include <cmath>
-
 #include <navtools/constants.hpp>
 #include <navtools/types.hpp>
+
 #include "types.hpp"
 
 namespace navtools {
@@ -28,22 +28,20 @@ namespace navtools {
 /// @brief      Earth-Centered-Inertial to Earth-Centered-Earth-Fixed direction cosine matrix
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECI->ECEF direction cosine matrix
-template <typename Float = double>
-void eci2ecefDcm(Mat3x3<Float> &C, const Float &dt)
-{
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_omega_dt = std::sin(omega_dt);
-  Float cos_omega_dt = std::cos(omega_dt);
+template <typename T = double>
+void eci2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const T &dt) {
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_omega_dt = std::sin(omega_dt);
+  T cos_omega_dt = std::cos(omega_dt);
   // clang-format off
   C <<  cos_omega_dt, sin_omega_dt, 0.0, 
        -sin_omega_dt, cos_omega_dt, 0.0, 
                  0.0,          0.0, 1.0;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> eci2ecefDcm(const Float &dt)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> eci2ecefDcm(const T &dt) {
+  Eigen::Matrix<T, 3, 3> C;
   eci2ecefDcm(C, dt);
   return C;
 }
@@ -53,24 +51,22 @@ Mat3x3<Float> eci2ecefDcm(const Float &dt)
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECI->NED direction cosine matrix
-template <typename Float = double>
-void eci2nedDcm(Mat3x3<Float> &C, const Vec3<Float> &lla, const Float &dt)
-{
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
-  Float cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
+template <typename T = double>
+void eci2nedDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const T &dt) {
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
+  T cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
   // clang-format off
   C << -sin_phi * cos_lam_omega_dt, -sin_phi * sin_lam_omega_dt,  cos_phi,
                  -sin_lam_omega_dt,            cos_lam_omega_dt,      0.0,
        -cos_phi * cos_lam_omega_dt, -cos_phi * sin_lam_omega_dt, -sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> eci2nedDcm(const Vec3<Float> &lla, const Float &dt)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> eci2nedDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C;
   eci2nedDcm(C, lla, dt);
   return C;
 }
@@ -80,24 +76,23 @@ Mat3x3<Float> eci2nedDcm(const Vec3<Float> &lla, const Float &dt)
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECI->ENU direction cosine matrix
-template <typename Float = double>
-void eci2enuDcm(Mat3x3<Float> &C, const Vec3<Float> &lla, const Float &dt)
-{
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
-  Float cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
+template <typename T = double>
+void eci2enuDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const T &dt) {
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
+  T cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
   // clang-format off
   C <<           -sin_lam_omega_dt,            cos_lam_omega_dt,     0.0, 
        -sin_phi * cos_lam_omega_dt, -sin_phi * sin_lam_omega_dt, cos_phi, 
         cos_phi * cos_lam_omega_dt,  cos_phi * sin_lam_omega_dt, sin_phi;
           // clang-format off
 }
-template <typename Float = double>
-Mat3x3<Float> eci2enuDcm(const Vec3<Float> &lla, const Float &dt)
+template <typename T = double>
+Eigen::Matrix<T,3,3> eci2enuDcm(const Eigen::Vector<T,3> &lla, const T &dt)
 {
-  Mat3x3<Float> C;
+  Eigen::Matrix<T,3,3> C;
   eci2enuDcm(C, lla, dt);
   return C;
 }
@@ -106,22 +101,21 @@ Mat3x3<Float> eci2enuDcm(const Vec3<Float> &lla, const Float &dt)
 /// @brief      Earth-Centered-Earth-Fixed to Earth-Centered-Inertial direction cosine matrix
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECEF->ECI direction cosine matrix
-template <typename Float = double>
-void ecef2eciDcm(Mat3x3<Float> &C, const Float &dt)
+template <typename T = double>
+void ecef2eciDcm(Eigen::Matrix<T,3,3> &C, const T &dt)
 {
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_omega_dt = std::sin(omega_dt);
-  Float cos_omega_dt = std::cos(omega_dt);
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_omega_dt = std::sin(omega_dt);
+  T cos_omega_dt = std::cos(omega_dt);
   // clang-format off
   C << cos_omega_dt, -sin_omega_dt, 0.0, 
        sin_omega_dt,  cos_omega_dt, 0.0, 
                 0.0,          0.0,  1.0;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> ecef2eciDcm(const Float &dt)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ecef2eciDcm(const T &dt) {
+  Eigen::Matrix<T, 3, 3> C;
   ecef2eciDcm(C, dt);
   return C;
 }
@@ -130,23 +124,21 @@ Mat3x3<Float> ecef2eciDcm(const Float &dt)
 /// @brief      Earth-Centered-Earth-Fixed to North-East-Down direction cosine matrix
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    3x3 ECEF->NED direction cosine matrix
-template <typename Float = double>
-void ecef2nedDcm(Mat3x3<Float> &C, const Vec3<Float> &lla)
-{
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam = std::sin(lla(1));
-  Float cos_lam = std::cos(lla(1));
+template <typename T = double>
+void ecef2nedDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam = std::sin(lla(1));
+  T cos_lam = std::cos(lla(1));
   // clang-format off
   C << -sin_phi * cos_lam, -sin_phi * sin_lam,  cos_phi,
                  -sin_lam,            cos_lam,      0.0,
        -cos_phi * cos_lam, -cos_phi * sin_lam, -sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> ecef2nedDcm(const Vec3<Float> &lla)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ecef2nedDcm(const Eigen::Vector<T, 3> &lla) {
+  Eigen::Matrix<T, 3, 3> C;
   ecef2nedDcm(C, lla);
   return C;
 }
@@ -155,28 +147,26 @@ Mat3x3<Float> ecef2nedDcm(const Vec3<Float> &lla)
 /// @brief      Earth-Centered-Earth-Fixed to East-North-Up direction cosine matrix
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    3x3 ECEF->ENU direction cosine matrix
-template<typename Derived1, typename Derived2>
-void ecef2enuDcm(DenseBase<Derived1>& C, const DenseBase<Derived2>& lla)
-{
-  ASSERT_EIGEN_OBJ_SIZE(Derived1,C,3,3);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2,lla,3,1);
-  typedef typename Derived1::Scalar Float;
-  
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam = std::sin(lla(1));
-  Float cos_lam = std::cos(lla(1));
+template <typename Derived1, typename Derived2>
+void ecef2enuDcm(DenseBase<Derived1> &C, const DenseBase<Derived2> &lla) {
+  ASSERT_EIGEN_OBJ_SIZE(Derived1, C, 3, 3);
+  ASSERT_EIGEN_OBJ_SIZE(Derived2, lla, 3, 1);
+  typedef typename Derived1::Scalar T;
+
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam = std::sin(lla(1));
+  T cos_lam = std::cos(lla(1));
   // clang-format off
   C.derived() <<           -sin_lam,            cos_lam,     0.0,
                  -sin_phi * cos_lam, -sin_phi * sin_lam, cos_phi,
                   cos_phi * cos_lam,  cos_phi * sin_lam, sin_phi;
   // clang-format on
 }
-template<typename Derived>
-auto ecef2enuDcm(const DenseBase<Derived>& lla)
-{
-  typedef typename Derived::Scalar Float;
-  Mat3x3<Float> C;
+template <typename Derived>
+auto ecef2enuDcm(const DenseBase<Derived> &lla) {
+  typedef typename Derived::Scalar T;
+  Eigen::Matrix<T, 3, 3> C;
   ecef2enuDcm(C, lla);
   return C;
 }
@@ -186,24 +176,22 @@ auto ecef2enuDcm(const DenseBase<Derived>& lla)
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECEF->ECI direction cosine matrix
-template <typename Float = double>
-void ned2eciDcm(Mat3x3<Float> &C, const Vec3<Float> &lla, const Float &dt)
-{
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
-  Float cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
+template <typename T = double>
+void ned2eciDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const T &dt) {
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
+  T cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
   // clang-format off
   C << -sin_phi * cos_lam_omega_dt, -sin_lam_omega_dt, -cos_phi * cos_lam_omega_dt,
        -sin_phi * sin_lam_omega_dt,  cos_lam_omega_dt, -cos_phi * sin_lam_omega_dt,
                            cos_phi,               0.0,                    -sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> ned2eciDcm(const Vec3<Float> &lla, const Float &dt)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ned2eciDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C;
   ned2eciDcm(C, lla, dt);
   return C;
 }
@@ -212,23 +200,21 @@ Mat3x3<Float> ned2eciDcm(const Vec3<Float> &lla, const Float &dt)
 /// @brief      North-East-Down to Earth-Centered-Earth-Fixed direction cosine matrix
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    3x3 ECEF->NED direction cosine matrix
-template <typename Float = double>
-void ned2ecefDcm(Mat3x3<Float> &C, const Vec3<Float> &lla)
-{
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam = std::sin(lla(1));
-  Float cos_lam = std::cos(lla(1));
+template <typename T = double>
+void ned2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam = std::sin(lla(1));
+  T cos_lam = std::cos(lla(1));
   // clang-format off
   C << -sin_phi * cos_lam, -sin_lam, -cos_phi * cos_lam,
        -sin_phi * sin_lam,  cos_lam, -cos_phi * sin_lam,
                   cos_phi,      0.0,           -sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> ned2ecefDcm(const Vec3<Float> &lla)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ned2ecefDcm(const Eigen::Vector<T, 3> &lla) {
+  Eigen::Matrix<T, 3, 3> C;
   ned2ecefDcm(C, lla);
   return C;
 }
@@ -236,15 +222,13 @@ Mat3x3<Float> ned2ecefDcm(const Vec3<Float> &lla)
 //! --- NED2ENUDCM ---
 /// @brief      North-East-Down to East-North-Up direction cosine matrix
 /// @returns    3x3 ECEF->ENU direction cosine matrix
-template <typename Float = double>
-void ned2enuDcm(Mat3x3<Float> &C)
-{
+template <typename T = double>
+void ned2enuDcm(Eigen::Matrix<T, 3, 3> &C) {
   C << 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0;
 }
-template <typename Float = double>
-Mat3x3<Float> ned2enuDcm()
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ned2enuDcm() {
+  Eigen::Matrix<T, 3, 3> C;
   ned2enuDcm(C);
   return C;
 }
@@ -254,24 +238,22 @@ Mat3x3<Float> ned2enuDcm()
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    3x3 ECEF->ECI direction cosine matrix
-template <typename Float = double>
-void enu2eciDcm(Mat3x3<Float> &C, const Vec3<Float> &lla, const Float &dt)
-{
-  Float omega_dt = WGS84_OMEGA<Float> * dt;
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
-  Float cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
+template <typename T = double>
+void enu2eciDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const T &dt) {
+  T omega_dt = WGS84_OMEGA<T> * dt;
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam_omega_dt = std::sin(lla(1) + omega_dt);
+  T cos_lam_omega_dt = std::cos(lla(1) + omega_dt);
   // clang-format off
   C << -sin_lam_omega_dt, -sin_phi * cos_lam_omega_dt, cos_phi * cos_lam_omega_dt,
         cos_lam_omega_dt, -sin_phi * sin_lam_omega_dt, cos_phi * sin_lam_omega_dt,
                      0.0,                     cos_phi,                    sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> enu2eciDcm(const Vec3<Float> &lla, const Float &dt)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> enu2eciDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C;
   enu2eciDcm(C, lla, dt);
   return C;
 }
@@ -280,23 +262,21 @@ Mat3x3<Float> enu2eciDcm(const Vec3<Float> &lla, const Float &dt)
 /// @brief      East-North-Up to Earth-Centered-Earth-Fixed direction cosine matrix
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    3x3 ECEF->NED direction cosine matrix
-template <typename Float = double>
-void enu2ecefDcm(Mat3x3<Float> &C, const Vec3<Float> &lla)
-{
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam = std::sin(lla(1));
-  Float cos_lam = std::cos(lla(1));
+template <typename T = double>
+void enu2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam = std::sin(lla(1));
+  T cos_lam = std::cos(lla(1));
   // clang-format off
   C << -sin_lam, -cos_lam * sin_phi, cos_lam * cos_phi,
         cos_lam, -sin_lam * sin_phi, sin_lam * cos_phi,
             0.0,            cos_phi,           sin_phi;
   // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> enu2ecefDcm(const Vec3<Float> &lla)
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> enu2ecefDcm(const Eigen::Vector<T, 3> &lla) {
+  Eigen::Matrix<T, 3, 3> C;
   enu2ecefDcm(C, lla);
   return C;
 }
@@ -304,15 +284,13 @@ Mat3x3<Float> enu2ecefDcm(const Vec3<Float> &lla)
 //! --- ENU2NEDDCM ---
 /// @brief      East-North-Up to North-East-Down direction cosine matrix
 /// @returns    3x3 ECEF->ENU direction cosine matrix
-template <typename Float = double>
-void enu2nedDcm(Mat3x3<Float> &C)
-{
+template <typename T = double>
+void enu2nedDcm(Eigen::Matrix<T, 3, 3> &C) {
   C << 0.0, 1.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, -1.0;
 }
-template <typename Float = double>
-Mat3x3<Float> enu2nedDcm()
-{
-  Mat3x3<Float> C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> enu2nedDcm() {
+  Eigen::Matrix<T, 3, 3> C;
   enu2nedDcm(C);
   return C;
 }
@@ -325,17 +303,15 @@ Mat3x3<Float> enu2nedDcm()
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    ECI position
-template <typename Float = double>
-void lla2eci(Vec3<Float> &eci, const Vec3<Float> &lla, const Float &dt)
-{
-  Vec3<Float> xyz = lla2ecef(lla);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+template <typename T = double>
+void lla2eci(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla, const T &dt) {
+  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
   eci = C_e_i * xyz;
 }
-template <typename Float = double>
-Vec3<Float> lla2eci(const Vec3<Float> &lla, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> lla2eci(const Eigen::Vector<T, 3> &lla, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   lla2eci(eci, lla, dt);
   return eci;
 }
@@ -345,29 +321,27 @@ Vec3<Float> lla2eci(const Vec3<Float> &lla, const Float &dt)
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    ECEF position
-template<typename Derived1, typename Derived2>
-void lla2ecef(DenseBase<Derived1>& xyz, const DenseBase<Derived2>& lla)
-{
-  ASSERT_EIGEN_OBJ_SIZE(Derived1,xyz,3,1);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2,lla,3,1);
-  typedef typename Derived1::Scalar Float;  
+template <typename Derived1, typename Derived2>
+void lla2ecef(DenseBase<Derived1> &xyz, const DenseBase<Derived2> &lla) {
+  ASSERT_EIGEN_OBJ_SIZE(Derived1, xyz, 3, 1);
+  ASSERT_EIGEN_OBJ_SIZE(Derived2, lla, 3, 1);
+  typedef typename Derived1::Scalar T;
 
-  Float sin_phi = std::sin(lla(0));
-  Float cos_phi = std::cos(lla(0));
-  Float sin_lam = std::sin(lla(1));
-  Float cos_lam = std::cos(lla(1));
-  Float h = lla(2);
+  T sin_phi = std::sin(lla(0));
+  T cos_phi = std::cos(lla(0));
+  T sin_lam = std::sin(lla(1));
+  T cos_lam = std::cos(lla(1));
+  T h = lla(2);
 
-  Float Re = WGS84_R0<Float> / std::sqrt(1.0 - WGS84_E2<Float> * sin_phi * sin_phi);
+  T Re = WGS84_R0<T> / std::sqrt(1.0 - WGS84_E2<T> * sin_phi * sin_phi);
   xyz(0) = (Re + h) * cos_phi * cos_lam;
   xyz(1) = (Re + h) * cos_phi * sin_lam;
-  xyz(2) = (Re * (1.0 - WGS84_E2<Float>)+h) * sin_phi;
+  xyz(2) = (Re * (1.0 - WGS84_E2<T>)+h) * sin_phi;
 }
-template<typename Derived>
-auto lla2ecef(const DenseBase<Derived>& lla)
-{
-  typedef typename Derived::Scalar Float;
-  Vec3<Float> xyz;
+template <typename Derived>
+auto lla2ecef(const DenseBase<Derived> &lla) {
+  typedef typename Derived::Scalar T;
+  Eigen::Vector<T, 3> xyz;
   lla2ecef(xyz, lla);
   return xyz;
 }
@@ -378,18 +352,17 @@ auto lla2ecef(const DenseBase<Derived>& lla)
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param lla0 3x1 Reference Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    NED position
-template <typename Float = double>
-void lla2ned(Vec3<Float> &ned, const Vec3<Float> &lla, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2nedDcm(lla0);
-  Vec3<Float> xyz0 = lla2ecef(lla0);
-  Vec3<Float> xyz = lla2ecef(lla);
+template <typename T = double>
+void lla2ned(
+    Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
+  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
   ned = C_e_n * (xyz - xyz0);
 }
-template <typename Float = double>
-Vec3<Float> lla2ned(const Vec3<Float> &lla, const Vec3<Float> &lla0)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> lla2ned(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> ned;
   lla2ned(ned, lla, lla0);
   return ned;
 }
@@ -400,18 +373,17 @@ Vec3<Float> lla2ned(const Vec3<Float> &lla, const Vec3<Float> &lla0)
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param lla0 3x1 Reference Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    ENU position
-template <typename Float = double>
-void lla2enu(Vec3<Float> &enu, const Vec3<Float> &lla, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
-  Vec3<Float> xyz0 = lla2ecef(lla0);
-  Vec3<Float> xyz = lla2ecef(lla);
+template <typename T = double>
+void lla2enu(
+    Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
+  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
   enu = C_e_n * (xyz - xyz0);
 }
-template <typename Float = double>
-Vec3<Float> lla2enu(const Vec3<Float> &lla, const Vec3<Float> &lla0)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> lla2enu(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> enu;
   lla2ned(enu, lla, lla0);
   return enu;
 }
@@ -422,18 +394,17 @@ Vec3<Float> lla2enu(const Vec3<Float> &lla, const Vec3<Float> &lla0)
 /// @param llaR 3x1 Reference Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @param llaT 3x1 Target Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    AER from reference to target
-template <typename Float = double>
-void lla2aer(Vec3<Float> &aer, const Vec3<Float> &llaR, const Vec3<Float> &llaT)
-{
-  Vec3<Float> enu = lla2enu(llaT, llaR);
+template <typename T = double>
+void lla2aer(
+    Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &llaR, const Eigen::Vector<T, 3> &llaT) {
+  Eigen::Vector<T, 3> enu = lla2enu(llaT, llaR);
   aer(2) = enu.norm();
   aer(1) = std::asin(enu(2) / aer(2));
   aer(0) = std::atan2(enu(0), enu(1));
 }
-template <typename Float = double>
-Vec3<Float> lla2aer(const Vec3<Float> &llaR, const Vec3<Float> &llaT)
-{
-  Vec3<Float> aer;
+template <typename T = double>
+Eigen::Vector<T, 3> lla2aer(const Eigen::Vector<T, 3> &llaR, const Eigen::Vector<T, 3> &llaT) {
+  Eigen::Vector<T, 3> aer;
   lla2aer(aer, llaR, llaT);
   return aer;
 }
@@ -444,16 +415,14 @@ Vec3<Float> lla2aer(const Vec3<Float> &llaR, const Vec3<Float> &llaT)
 /// @param xyz  3x1 ECEF position [m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    ECEF position
-template <typename Float = double>
-void eci2ecef(Vec3<Float> &xyz, const Vec3<Float> &eci, const Float &dt)
-{
-  Mat3x3<Float> C_i_e = eci2ecefDcm(dt);
+template <typename T = double>
+void eci2ecef(Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &eci, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
   xyz = C_i_e * eci;
 }
-template <typename Float = double>
-Vec3<Float> eci2ecef(const Vec3<Float> &eci, const Float &dt)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2ecef(const Eigen::Vector<T, 3> &eci, const T &dt) {
+  Eigen::Vector<T, 3> xyz;
   eci2ecef(xyz, eci, dt);
   return xyz;
 }
@@ -464,16 +433,14 @@ Vec3<Float> eci2ecef(const Vec3<Float> &eci, const Float &dt)
 /// @param lla  3x1 LLA position [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    lla position
-template <typename Float = double>
-void eci2lla(Vec3<Float> &lla, const Vec3<Float> &eci, const Float &dt)
-{
-  Vec3<Float> xyz = eci2ecef(eci, dt);
+template <typename T = double>
+void eci2lla(Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &eci, const T &dt) {
+  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
   lla = ecef2lla(xyz);
 }
-template <typename Float = double>
-Vec3<Float> eci2lla(const Vec3<Float> &eci, const Float &dt)
-{
-  Vec3<Float> lla;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2lla(const Eigen::Vector<T, 3> &eci, const T &dt) {
+  Eigen::Vector<T, 3> lla;
   eci2lla(lla, eci, dt);
   return lla;
 }
@@ -485,16 +452,19 @@ Vec3<Float> eci2lla(const Vec3<Float> &eci, const Float &dt)
 /// @param ned  3x1 NED position [m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    lla position
-template <typename Float = double>
-void eci2ned(Vec3<Float> &ned, const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> xyz = eci2ecef(eci, dt);
+template <typename T = double>
+void eci2ned(
+    Eigen::Vector<T, 3> &ned,
+    const Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
   ned = ecef2ned(xyz, lla0);
 }
-template <typename Float = double>
-Vec3<Float> eci2ned(const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2ned(
+    const Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla0, const T &dt) {
+  Eigen::Vector<T, 3> ned;
   eci2ned(ned, eci, lla0, dt);
   return ned;
 }
@@ -506,16 +476,19 @@ Vec3<Float> eci2ned(const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float
 /// @param enu  3x1 ENU position [m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    lla position
-template <typename Float = double>
-void eci2enu(Vec3<Float> &enu, const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> xyz = eci2ecef(eci, dt);
+template <typename T = double>
+void eci2enu(
+    Eigen::Vector<T, 3> &enu,
+    const Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
   enu = ecef2enu(xyz, lla0);
 }
-template <typename Float = double>
-Vec3<Float> eci2enu(const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2enu(
+    const Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla0, const T &dt) {
+  Eigen::Vector<T, 3> enu;
   eci2enu(enu, eci, lla0, dt);
   return enu;
 }
@@ -527,15 +500,18 @@ Vec3<Float> eci2enu(const Vec3<Float> &eci, const Vec3<Float> &lla0, const Float
 /// @param eciT 3x1 Target ECI position [m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    AER from reference to target
-template <typename Float = double>
-void eci2aer(Vec3<Float> &aer, const Vec3<Float> &eciR, const Vec3<Float> &eciT, const Float &dt)
-{
+template <typename T = double>
+void eci2aer(
+    Eigen::Vector<T, 3> &aer,
+    const Eigen::Vector<T, 3> &eciR,
+    const Eigen::Vector<T, 3> &eciT,
+    const T &dt) {
   aer = ecef2aer(eci2ecef(eciT, dt), eci2ecef(eciR, dt));
 }
-template <typename Float = double>
-Vec3<Float> eci2aer(const Vec3<Float> &eciR, const Vec3<Float> &eciT, const Float &dt)
-{
-  Vec3<Float> aer;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2aer(
+    const Eigen::Vector<T, 3> &eciR, const Eigen::Vector<T, 3> &eciT, const T &dt) {
+  Eigen::Vector<T, 3> aer;
   eci2aer(aer, eciR, eciT, dt);
   return aer;
 }
@@ -546,16 +522,14 @@ Vec3<Float> eci2aer(const Vec3<Float> &eciR, const Vec3<Float> &eciT, const Floa
 /// @param eci  3x1 ECI position [m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    ECEF position
-template <typename Float = double>
-void ecef2eci(Vec3<Float> &eci, const Vec3<Float> &xyz, const Float &dt)
-{
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+template <typename T = double>
+void ecef2eci(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &xyz, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
   eci = C_e_i * xyz;
 }
-template <typename Float = double>
-Vec3<Float> ecef2eci(const Vec3<Float> &xyz, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2eci(const Eigen::Vector<T, 3> &xyz, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ecef2eci(eci, xyz, dt);
   return eci;
 }
@@ -565,42 +539,40 @@ Vec3<Float> ecef2eci(const Vec3<Float> &xyz, const Float &dt)
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla  3x1 LLA position [rad, rad, m]
 /// @returns    lla position
-template<typename Derived1, typename Derived2>
-void ecef2lla(DenseBase<Derived1>& lla, const DenseBase<Derived2>& xyz)
-{
-  ASSERT_EIGEN_OBJ_SIZE(Derived1,lla,3,1);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2,xyz,3,1);
-  typedef typename Derived1::Scalar Float;
+template <typename Derived1, typename Derived2>
+void ecef2lla(DenseBase<Derived1> &lla, const DenseBase<Derived2> &xyz) {
+  ASSERT_EIGEN_OBJ_SIZE(Derived1, lla, 3, 1);
+  ASSERT_EIGEN_OBJ_SIZE(Derived2, xyz, 3, 1);
+  typedef typename Derived1::Scalar T;
 
-  const Float& x = xyz(0);
-  const Float& y = xyz(1);
-  const Float& z = xyz(2);
+  const T &x = xyz(0);
+  const T &y = xyz(1);
+  const T &z = xyz(2);
 
-  Float sign_z = std::copysign(1.0, z);
-  Float sqrt_1_e2 = std::sqrt(1.0 - WGS84_E2<Float>);
+  T sign_z = std::copysign(1.0, z);
+  T sqrt_1_e2 = std::sqrt(1.0 - WGS84_E2<T>);
 
-  Float beta = std::sqrt(x * x + y * y);  // (Groves C.18)
-  Float a = sqrt_1_e2 * std::abs(z);
-  Float b = WGS84_E2<Float> * WGS84_R0<Float>;
-  Float E = (a - b) / beta;             // (Groves C.29)
-  Float F = (a + b) / beta;             // (Groves C.30)
-  Float P = 4.0 / 3.0 * (E * F + 1.0);  // (Groves C.31)
-  Float Q = 2.0 * (E * E - F * F);      // (Groves C.32)
-  Float D = P * P * P + Q * Q;          // (Groves C.33)
-  Float sqrt_D = std::sqrt(D);
-  Float V = std::pow(sqrt_D - Q, 1.0 / 3.0) - std::pow(sqrt_D + Q, 1.0 / 3.0);  // (Groves C.34)
-  Float G = 0.5 * (std::sqrt(E * E + V) + E);                                   // (Groves C.35)
-  Float T = std::sqrt(G * G + ((F - V * G) / (2.0 * G - E))) - G;               // (Groves C.36)
-  lla(0) = sign_z * std::atan((1.0 - T * T) / (2.0 * T * sqrt_1_e2));           // (Groves C.37)
+  T beta = std::sqrt(x * x + y * y);  // (Groves C.18)
+  T a = sqrt_1_e2 * std::abs(z);
+  T b = WGS84_E2<T> * WGS84_R0<T>;
+  T E = (a - b) / beta;             // (Groves C.29)
+  T F = (a + b) / beta;             // (Groves C.30)
+  T P = 4.0 / 3.0 * (E * F + 1.0);  // (Groves C.31)
+  T Q = 2.0 * (E * E - F * F);      // (Groves C.32)
+  T D = P * P * P + Q * Q;          // (Groves C.33)
+  T sqrt_D = std::sqrt(D);
+  T V = std::pow(sqrt_D - Q, 1.0 / 3.0) - std::pow(sqrt_D + Q, 1.0 / 3.0);  // (Groves C.34)
+  T G = 0.5 * (std::sqrt(E * E + V) + E);                                   // (Groves C.35)
+  T t = std::sqrt(G * G + ((F - V * G) / (2.0 * G - E))) - G;               // (Groves C.36)
+  lla(0) = sign_z * std::atan((1.0 - t * t) / (2.0 * t * sqrt_1_e2));       // (Groves C.37)
   lla(1) = std::atan2(y, x);
-  lla(2) = (beta - WGS84_R0<Float> * T) * std::cos(lla(0)) +
-           (z - sign_z * WGS84_R0<Float> * sqrt_1_e2) * std::sin(lla(0));  // (Groves C.38)
+  lla(2) = (beta - WGS84_R0<T> * t) * std::cos(lla(0)) +
+           (z - sign_z * WGS84_R0<T> * sqrt_1_e2) * std::sin(lla(0));  // (Groves C.38)
 }
-template<typename Derived>
-auto ecef2lla(const DenseBase<Derived>& xyz)
-{
-  typedef typename Derived::Scalar Float;
-  Vec3<Float> lla;
+template <typename Derived>
+auto ecef2lla(const DenseBase<Derived> &xyz) {
+  typedef typename Derived::Scalar T;
+  Eigen::Vector<T, 3> lla;
   ecef2lla(lla, xyz);
   return lla;
 }
@@ -611,17 +583,16 @@ auto ecef2lla(const DenseBase<Derived>& xyz)
 /// @param ned  3x1 NED position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    NED position
-template <typename Float = double>
-void ecef2ned(Vec3<Float> &ned, const Vec3<Float> &xyz, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2nedDcm(lla0);
-  Vec3<Float> xyz0 = lla2ecef(lla0);
+template <typename T = double>
+void ecef2ned(
+    Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
   ned = C_e_n * (xyz - xyz0);
 }
-template <typename Float = double>
-Vec3<Float> ecef2ned(const Vec3<Float> &xyz, const Vec3<Float> &lla0)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2ned(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> ned;
   ecef2ned(ned, xyz, lla0);
   return ned;
 }
@@ -632,17 +603,16 @@ Vec3<Float> ecef2ned(const Vec3<Float> &xyz, const Vec3<Float> &lla0)
 /// @param enu  3x1 ENU position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    ENU position
-template <typename Float = double>
-void ecef2enu(Vec3<Float> &enu, const Vec3<Float> &xyz, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
-  Vec3<Float> xyz0 = lla2ecef(lla0);
+template <typename T = double>
+void ecef2enu(
+    Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
   enu = C_e_n * (xyz - xyz0);
 }
-template <typename Float = double>
-Vec3<Float> ecef2enu(const Vec3<Float> &xyz, const Vec3<Float> &lla0)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2enu(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> enu;
   ecef2enu(enu, xyz, lla0);
   return enu;
 }
@@ -653,21 +623,20 @@ Vec3<Float> ecef2enu(const Vec3<Float> &xyz, const Vec3<Float> &lla0)
 /// @param xyzR 3x1 Reference ECEF position [m]
 /// @param xyzT 3x1 Target ECEF position [m]
 /// @returns    AER position
-template <typename Float = double>
-void ecef2aer(Vec3<Float> &aer, const Vec3<Float> &xyzR, const Vec3<Float> &xyzT)
-{
-  Vec3<Float> lla0 = ecef2lla(xyzR);
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
-  Vec3<Float> enu = C_e_n * (xyzT - xyzR);
+template <typename T = double>
+void ecef2aer(
+    Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &xyzR, const Eigen::Vector<T, 3> &xyzT) {
+  Eigen::Vector<T, 3> lla0 = ecef2lla(xyzR);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Vector<T, 3> enu = C_e_n * (xyzT - xyzR);
 
   aer(2) = enu.norm();
   aer(1) = std::asin(enu(2) / aer(2));
   aer(0) = std::atan2(enu(0), enu(1));
 }
-template <typename Float = double>
-Vec3<Float> ecef2aer(const Vec3<Float> &xyzR, const Vec3<Float> &xyzT)
-{
-  Vec3<Float> aer;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2aer(const Eigen::Vector<T, 3> &xyzR, const Eigen::Vector<T, 3> &xyzT) {
+  Eigen::Vector<T, 3> aer;
   ecef2aer(aer, xyzR, xyzT);
   return aer;
 }
@@ -679,17 +648,20 @@ Vec3<Float> ecef2aer(const Vec3<Float> &xyzR, const Vec3<Float> &xyzT)
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    ECI position
-template <typename Float = double>
-void ned2eci(Vec3<Float> &eci, const Vec3<Float> &ned, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> xyz = ned2ecef(ned, lla0);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+template <typename T = double>
+void ned2eci(
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &ned,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz = ned2ecef(ned, lla0);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
   eci = C_e_i * xyz;
 }
-template <typename Float = double>
-Vec3<Float> ned2eci(const Vec3<Float> &ned, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2eci(
+    const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ned2eci(eci, ned, lla0, dt);
   return eci;
 }
@@ -700,16 +672,15 @@ Vec3<Float> ned2eci(const Vec3<Float> &ned, const Vec3<Float> &lla0, const Float
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    ECEF position
-template <typename Float = double>
-void ned2ecef(Vec3<Float> &xyz, const Vec3<Float> &ned, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = ned2ecefDcm(lla0);
+template <typename T = double>
+void ned2ecef(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
   xyz = lla2ecef(lla0) + C_n_e * ned;
 }
-template <typename Float = double>
-Vec3<Float> ned2ecef(const Vec3<Float> &ned, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecef(const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   ned2ecef(xyz, ned, lla0);
   return xyz;
 }
@@ -720,16 +691,15 @@ Vec3<Float> ned2ecef(const Vec3<Float> &ned, const Vec3<Float> &lla0)
 /// @param lla  3x1 LLA position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    LLA position
-template <typename Float = double>
-void ned2lla(Vec3<Float> &lla, const Vec3<Float> &ned, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz = ned2ecef(ned, lla0);
+template <typename T = double>
+void ned2lla(
+    Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz = ned2ecef(ned, lla0);
   lla = ecef2lla(xyz);
 }
-template <typename Float = double>
-Vec3<Float> ned2lla(const Vec3<Float> &ned, const Vec3<Float> &lla0)
-{
-  Vec3<Float> lla;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2lla(const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> lla;
   ned2ecef(lla, ned, lla0);
   return lla;
 }
@@ -740,18 +710,17 @@ Vec3<Float> ned2lla(const Vec3<Float> &ned, const Vec3<Float> &lla0)
 /// @param nedR 3x1 Reference NED position [m]
 /// @param nedT 3x1 Target NED position [m]
 /// @returns    AER position
-template <typename Float = double>
-void ned2aer(Vec3<Float> &aer, const Vec3<Float> &nedR, const Vec3<Float> &nedT)
-{
-  Vec3<Float> d_ned = nedT - nedR;
+template <typename T = double>
+void ned2aer(
+    Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &nedR, const Eigen::Vector<T, 3> &nedT) {
+  Eigen::Vector<T, 3> d_ned = nedT - nedR;
   aer(2) = d_ned.norm();
   aer(1) = std::asin(-d_ned(2) / aer(2));
   aer(0) = std::atan2(d_ned(1), d_ned(0));
 }
-template <typename Float = double>
-Vec3<Float> ned2aer(const Vec3<Float> &nedR, const Vec3<Float> &nedT)
-{
-  Vec3<Float> aer;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2aer(const Eigen::Vector<T, 3> &nedR, const Eigen::Vector<T, 3> &nedT) {
+  Eigen::Vector<T, 3> aer;
   ned2aer(aer, nedR, nedT);
   return aer;
 }
@@ -763,17 +732,20 @@ Vec3<Float> ned2aer(const Vec3<Float> &nedR, const Vec3<Float> &nedT)
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @param dt   time elapsed between frames [s]
 /// @returns    ECI position
-template <typename Float = double>
-void enu2eci(Vec3<Float> &eci, const Vec3<Float> &enu, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> xyz = enu2ecef(enu, lla0);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+template <typename T = double>
+void enu2eci(
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &enu,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz = enu2ecef(enu, lla0);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
   eci = C_e_i * xyz;
 }
-template <typename Float = double>
-Vec3<Float> enu2eci(const Vec3<Float> &enu, const Vec3<Float> &lla0, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2eci(
+    const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   enu2eci(eci, enu, lla0, dt);
   return eci;
 }
@@ -784,16 +756,15 @@ Vec3<Float> enu2eci(const Vec3<Float> &enu, const Vec3<Float> &lla0, const Float
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    ECEF position
-template <typename Float = double>
-void enu2ecef(Vec3<Float> &xyz, const Vec3<Float> &enu, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = enu2ecefDcm(lla0);
+template <typename T = double>
+void enu2ecef(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
   xyz = lla2ecef(lla0) + C_n_e * enu;
 }
-template <typename Float = double>
-Vec3<Float> enu2ecef(const Vec3<Float> &enu, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecef(const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   enu2ecef(xyz, enu, lla0);
   return xyz;
 }
@@ -804,16 +775,15 @@ Vec3<Float> enu2ecef(const Vec3<Float> &enu, const Vec3<Float> &lla0)
 /// @param lla  3x1 LLA position [m]
 /// @param lla0 3x1 Reference LLA position [rad, rad, m]
 /// @returns    LLA position
-template <typename Float = double>
-void enu2lla(Vec3<Float> &lla, const Vec3<Float> &enu, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz = enu2ecef(enu, lla0);
+template <typename T = double>
+void enu2lla(
+    Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz = enu2ecef(enu, lla0);
   lla = ecef2lla(xyz);
 }
-template <typename Float = double>
-Vec3<Float> enu2lla(const Vec3<Float> &enu, const Vec3<Float> &lla0)
-{
-  Vec3<Float> lla;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2lla(const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> lla;
   enu2ecef(lla, enu, lla0);
   return lla;
 }
@@ -824,18 +794,17 @@ Vec3<Float> enu2lla(const Vec3<Float> &enu, const Vec3<Float> &lla0)
 /// @param enuR 3x1 Reference NED position [m]
 /// @param enuT 3x1 Target NED position [m]
 /// @returns    AER position
-template <typename Float = double>
-void enu2aer(Vec3<Float> &aer, const Vec3<Float> &enuR, const Vec3<Float> &enuT)
-{
-  Vec3<Float> d_enu = enuT - enuR;
+template <typename T = double>
+void enu2aer(
+    Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &enuR, const Eigen::Vector<T, 3> &enuT) {
+  Eigen::Vector<T, 3> d_enu = enuT - enuR;
   aer(2) = d_enu.norm();
   aer(1) = std::asin(d_enu(2) / aer(2));
   aer(0) = std::atan2(d_enu(0), d_enu(1));
 }
-template <typename Float = double>
-Vec3<Float> enu2aer(const Vec3<Float> &enuR, const Vec3<Float> &enuT)
-{
-  Vec3<Float> aer;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2aer(const Eigen::Vector<T, 3> &enuR, const Eigen::Vector<T, 3> &enuT) {
+  Eigen::Vector<T, 3> aer;
   ned2aer(aer, enuR, enuT);
   return aer;
 }
@@ -849,17 +818,19 @@ Vec3<Float> enu2aer(const Vec3<Float> &enuR, const Vec3<Float> &enuT)
 /// @param xyz      3x1 ECEF velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    ECEF velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2ecefv(
-        Vec3<Float> &xyz, const Vec3<Float> &r_ib_i, const Vec3<Float> &v_ib_i, const Float &dt)
-{
-  Mat3x3<Float> C_i_e = eci2ecefDcm(dt);
-  xyz = C_i_e * (v_ib_i - WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &xyz,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  xyz = C_i_e * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2ecefv(const Vec3<Float> &r_ib_i, const Vec3<Float> &v_ib_i, const Float &dt)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2ecefv(
+    const Eigen::Vector<T, 3> &r_ib_i, const Eigen::Vector<T, 3> &v_ib_i, const T &dt) {
+  Eigen::Vector<T, 3> xyz;
   eci2ecefv(xyz, r_ib_i, v_ib_i, dt);
   return xyz;
 }
@@ -872,25 +843,23 @@ Vec3<Float> eci2ecefv(const Vec3<Float> &r_ib_i, const Vec3<Float> &v_ib_i, cons
 /// @param ned      3x1 NED velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    NED velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2nedv(
-        Vec3<Float> &ned,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_n = eci2nedDcm(lla0, dt);
-  ned = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &ned,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm(lla0, dt);
+  ned = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2nedv(
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2nedv(
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> ned;
   eci2nedv(ned, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
@@ -903,25 +872,23 @@ Vec3<Float> eci2nedv(
 /// @param enu      3x1 ENU velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    ENU velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2enuv(
-        Vec3<Float> &enu,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_n = eci2enuDcm(lla0, dt);
-  enu = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &enu,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm(lla0, dt);
+  enu = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2enuv(
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2enuv(
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> enu;
   eci2enuv(enu, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
@@ -933,17 +900,19 @@ Vec3<Float> eci2enuv(
 /// @param eci      3x1 ECI velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    ECI velocity
-template <typename Float = double>
+template <typename T = double>
 void ecef2eciv(
-        Vec3<Float> &eci, const Vec3<Float> &r_eb_e, const Vec3<Float> &v_eb_e, const Float &dt)
-{
-  Vec3<Float> C_e_i = ecef2eciDcm(dt);
-  eci = C_e_i * (v_eb_e - WGS84_OMEGA_SKEW<Float> * r_eb_e);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &r_eb_e,
+    const Eigen::Vector<T, 3> &v_eb_e,
+    const T &dt) {
+  Eigen::Vector<T, 3> C_e_i = ecef2eciDcm(dt);
+  eci = C_e_i * (v_eb_e - WGS84_OMEGA_SKEW<T> * r_eb_e);
 }
-template <typename Float = double>
-Vec3<Float> ecef2eciv(const Vec3<Float> &r_eb_e, const Vec3<Float> &v_eb_e, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2eciv(
+    const Eigen::Vector<T, 3> &r_eb_e, const Eigen::Vector<T, 3> &v_eb_e, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ecef2eciv(eci, r_eb_e, v_eb_e, dt);
   return eci;
 }
@@ -954,16 +923,15 @@ Vec3<Float> ecef2eciv(const Vec3<Float> &r_eb_e, const Vec3<Float> &v_eb_e, cons
 /// @param lla0     3x1 Reference LLA position [rad, rad, m]
 /// @param ned      3x1 NED velocity [m/s]
 /// @returns    NED velocity
-template <typename Float = double>
-void ecef2nedv(Vec3<Float> &ned, const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2nedDcm(lla0);
+template <typename T = double>
+void ecef2nedv(
+    Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
   ned = C_e_n * v_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2nedv(const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2nedv(const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> ned;
   ecef2nedv(ned, v_eb_e, lla0);
   return ned;
 }
@@ -974,16 +942,15 @@ Vec3<Float> ecef2nedv(const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
 /// @param lla0     3x1 Reference LLA position [rad, rad, m]
 /// @param enu      3x1 NED velocity [m/s]
 /// @returns    ENU velocity
-template <typename Float = double>
-void ecef2enuv(Vec3<Float> &enu, const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
+template <typename T = double>
+void ecef2enuv(
+    Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
   enu = C_e_n * v_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2enuv(const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2enuv(const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> enu;
   ecef2enuv(enu, v_eb_e, lla0);
   return enu;
 }
@@ -996,27 +963,25 @@ Vec3<Float> ecef2enuv(const Vec3<Float> &v_eb_e, const Vec3<Float> &lla0)
 /// @param eci      3x1 NED velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    ECI velocity
-template <typename Float = double>
+template <typename T = double>
 void ned2eciv(
-        Vec3<Float> &eci,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_n_i = ned2eciDcm(lla0, dt);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
-  Vec3<Float> xyz = ned2ecef(r_nb_e, lla0);
-  eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<Float> * xyz;
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> xyz = ned2ecef(r_nb_e, lla0);
+  eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<T> * xyz;
 }
-template <typename Float = double>
-Vec3<Float> ned2eciv(
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2eciv(
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ned2eciv(eci, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1027,16 +992,15 @@ Vec3<Float> ned2eciv(
 /// @param lla0     3x1 Reference LLA position [rad, rad, m]
 /// @param xyz      3x1 ECEF velocity [m/s]
 /// @returns    ENU velocity
-template <typename Float = double>
-void ned2ecefv(Vec3<Float> &xyz, const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = ned2ecefDcm(lla0);
+template <typename T = double>
+void ned2ecefv(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
   xyz = C_n_e * v_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> ned2ecefv(const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecefv(const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   ned2ecefv(xyz, v_nb_e, lla0);
   return xyz;
 }
@@ -1049,27 +1013,25 @@ Vec3<Float> ned2ecefv(const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
 /// @param eci      3x1 ECI velocity [m/s]
 /// @param dt       time elapsed between frames [s]
 /// @returns    ECI velocity
-template <typename Float = double>
+template <typename T = double>
 void enu2eciv(
-        Vec3<Float> &eci,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_n_i = enu2eciDcm(lla0, dt);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
-  Vec3<Float> xyz = ned2ecef(r_nb_e, lla0);
-  eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<Float> * xyz;
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> xyz = ned2ecef(r_nb_e, lla0);
+  eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<T> * xyz;
 }
-template <typename Float = double>
-Vec3<Float> enu2eciv(
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2eciv(
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   enu2eciv(eci, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1080,16 +1042,15 @@ Vec3<Float> enu2eciv(
 /// @param lla0     3x1 Reference LLA position [rad, rad, m]
 /// @param xyz      3x1 ECEF velocity [m/s]
 /// @returns    ENU velocity
-template <typename Float = double>
-void enu2ecefv(Vec3<Float> &xyz, const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = enu2ecefDcm(lla0);
+template <typename T = double>
+void enu2ecefv(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
   xyz = C_n_e * v_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> enu2ecefv(const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecefv(const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   enu2ecefv(xyz, v_nb_e, lla0);
   return xyz;
 }
@@ -1102,16 +1063,14 @@ Vec3<Float> enu2ecefv(const Vec3<Float> &v_nb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param xyz      3x1 ECEF angular velocity [rad/s]
 /// @returns    ECEF angular velocity
-template <typename Float = double>
-void eci2ecefw(Vec3<Float> &xyz, const Vec3<Float> &w_ib_i, const Float &dt)
-{
-  Mat3x3<Float> C_i_e = eci2ecefDcm(dt);
-  xyz = C_i_e * (w_ib_i + WGS84_OMEGA_VEC<Float>);
+template <typename T = double>
+void eci2ecefw(Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_ib_i, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  xyz = C_i_e * (w_ib_i + WGS84_OMEGA_VEC<T>);
 }
-template <typename Float = double>
-Vec3<Float> eci2ecefw(const Vec3<Float> &w_ib_i, const Float &dt)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2ecefw(const Eigen::Vector<T, 3> &w_ib_i, const T &dt) {
+  Eigen::Vector<T, 3> xyz;
   eci2ecefw(xyz, w_ib_i, dt);
   return xyz;
 }
@@ -1125,40 +1084,38 @@ Vec3<Float> eci2ecefw(const Vec3<Float> &w_ib_i, const Float &dt)
 /// @param dt       time elapsed between frames [s]
 /// @param ned      3x1 NED angular velocity [rad/s]
 /// @returns    NED angular velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2nedw(
-        Vec3<Float> &ned,
-        const Vec3<Float> &w_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> C_i_n = eci2nedDcm(lla0, dt);
+    Eigen::Vector<T, 3> &ned,
+    const Eigen::Vector<T, 3> &w_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> C_i_n = eci2nedDcm(lla0, dt);
 
-  Vec3<Float> v_nb_e = eci2nedv(r_ib_i, v_ib_i, lla0, dt);
-  Float vn = v_nb_e(0);
-  Float ve = v_nb_e(1);
-  Float phi = lla0(0);
-  Float h = lla0(2);
-  Float sin_phi = std::sin(phi);
+  Eigen::Vector<T, 3> v_nb_e = eci2nedv(r_ib_i, v_ib_i, lla0, dt);
+  T vn = v_nb_e(0);
+  T ve = v_nb_e(1);
+  T phi = lla0(0);
+  T h = lla0(2);
+  T sin_phi = std::sin(phi);
 
-  Float trans = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Float Re = WGS84_R0<Float> / std::sqrt(trans);
-  Float Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(trans, 1.5);
-  Vec3<Float> w_en_n{ve / (Re + h), -vn / (Rn + h), -ve * std::tan(phi) / (Re + h)};
+  T trans = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  T Re = WGS84_R0<T> / std::sqrt(trans);
+  T Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(trans, 1.5);
+  Eigen::Vector<T, 3> w_en_n{ve / (Re + h), -vn / (Rn + h), -ve * std::tan(phi) / (Re + h)};
 
-  ned = -w_en_n + C_i_n * (w_ib_i - WGS84_OMEGA_VEC<Float>);
+  ned = -w_en_n + C_i_n * (w_ib_i - WGS84_OMEGA_VEC<T>);
 }
-template <typename Float = double>
-Vec3<Float> eci2nedw(
-        const Vec3<Float> &w_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2nedw(
+    const Eigen::Vector<T, 3> &w_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> ned;
   eci2nedw(ned, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
@@ -1172,40 +1129,38 @@ Vec3<Float> eci2nedw(
 /// @param dt       time elapsed between frames [s]
 /// @param enu      3x1 ECU angular velocity [rad/s]
 /// @returns    ECU angular velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2enuw(
-        Vec3<Float> &enu,
-        const Vec3<Float> &w_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> C_i_n = eci2enuDcm(lla0, dt);
+    Eigen::Vector<T, 3> &enu,
+    const Eigen::Vector<T, 3> &w_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> C_i_n = eci2enuDcm(lla0, dt);
 
-  Vec3<Float> v_nb_e = eci2enuv(r_ib_i, v_ib_i, lla0, dt);
-  Float vn = v_nb_e(0);
-  Float ve = v_nb_e(1);
-  Float phi = lla0(0);
-  Float h = lla0(2);
-  Float sin_phi = std::sin(phi);
+  Eigen::Vector<T, 3> v_nb_e = eci2enuv(r_ib_i, v_ib_i, lla0, dt);
+  T vn = v_nb_e(0);
+  T ve = v_nb_e(1);
+  T phi = lla0(0);
+  T h = lla0(2);
+  T sin_phi = std::sin(phi);
 
-  Float trans = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Float Re = WGS84_R0<Float> / std::sqrt(trans);
-  Float Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(trans, 1.5);
-  Vec3<Float> w_en_n{-vn / (Rn + h), ve / (Re + h), ve * std::tan(phi) / (Re + h)};
+  T trans = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  T Re = WGS84_R0<T> / std::sqrt(trans);
+  T Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(trans, 1.5);
+  Eigen::Vector<T, 3> w_en_n{-vn / (Rn + h), ve / (Re + h), ve * std::tan(phi) / (Re + h)};
 
-  enu = -w_en_n + C_i_n * (w_ib_i - WGS84_OMEGA_VEC<Float>);
+  enu = -w_en_n + C_i_n * (w_ib_i - WGS84_OMEGA_VEC<T>);
 }
-template <typename Float = double>
-Vec3<Float> eci2enuw(
-        const Vec3<Float> &w_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2enuw(
+    const Eigen::Vector<T, 3> &w_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> enu;
   eci2enuw(enu, w_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
@@ -1216,16 +1171,14 @@ Vec3<Float> eci2enuw(
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI angular velocity [rad/s]
 /// @returns    ECI angular velocity
-template <typename Float = double>
-void ecef2eciw(Vec3<Float> &eci, const Vec3<Float> &w_eb_e, const Float &dt)
-{
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
-  eci = C_e_i * (w_eb_e + WGS84_OMEGA_VEC<Float>);
+template <typename T = double>
+void ecef2eciw(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &w_eb_e, const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  eci = C_e_i * (w_eb_e + WGS84_OMEGA_VEC<T>);
 }
-template <typename Float = double>
-Vec3<Float> ecef2eciw(const Vec3<Float> &w_eb_e, const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2eciw(const Eigen::Vector<T, 3> &w_eb_e, const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ecef2eciw(eci, w_eb_e, dt);
   return eci;
 }
@@ -1236,16 +1189,15 @@ Vec3<Float> ecef2eciw(const Vec3<Float> &w_eb_e, const Float &dt)
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param ned      3x1 NED angular velocity [rad/s]
 /// @returns    NED angular velocity
-template <typename Float = double>
-void ecef2nedw(Vec3<Float> &ned, const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2nedDcm(lla0);
+template <typename T = double>
+void ecef2nedw(
+    Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
   ned = C_e_n * w_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2nedw(const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2nedw(const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> ned;
   ecef2nedw(ned, w_eb_e, lla0);
   return ned;
 }
@@ -1256,16 +1208,15 @@ Vec3<Float> ecef2nedw(const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param ned      3x1 ECU angular velocity [rad/s]
 /// @returns    ENU angular velocity
-template <typename Float = double>
-void ecef2enuw(Vec3<Float> &enu, const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
+template <typename T = double>
+void ecef2enuw(
+    Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
   enu = C_e_n * w_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2enuw(const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2enuw(const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> enu;
   ecef2nedw(enu, w_eb_e, lla0);
   return enu;
 }
@@ -1278,37 +1229,35 @@ Vec3<Float> ecef2enuw(const Vec3<Float> &w_eb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI angular velocity [rad/s]
 /// @returns    ECI angular velocity
-template <typename Float = double>
+template <typename T = double>
 void ned2eciw(
-        Vec3<Float> &eci,
-        const Vec3<Float> &w_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> C_n_i = ned2eciDcm(lla0, dt);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &w_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> C_n_i = ned2eciDcm(lla0, dt);
 
-  Float vn = v_nb_e(0);
-  Float ve = v_nb_e(1);
-  Float phi = lla0(0);
-  Float h = lla0(2);
-  Float sin_phi = std::sin(phi);
+  T vn = v_nb_e(0);
+  T ve = v_nb_e(1);
+  T phi = lla0(0);
+  T h = lla0(2);
+  T sin_phi = std::sin(phi);
 
-  Float trans = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Float Re = WGS84_R0<Float> / std::sqrt(trans);
-  Float Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(trans, 1.5);
-  Vec3<Float> w_en_n{ve / (Re + h), -vn / (Rn + h), -ve * std::tan(phi) / (Re + h)};
+  T trans = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  T Re = WGS84_R0<T> / std::sqrt(trans);
+  T Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(trans, 1.5);
+  Eigen::Vector<T, 3> w_en_n{ve / (Re + h), -vn / (Rn + h), -ve * std::tan(phi) / (Re + h)};
 
-  eci = C_n_i * (w_nb_e + w_en_n) + WGS84_OMEGA_VEC<Float>;
+  eci = C_n_i * (w_nb_e + w_en_n) + WGS84_OMEGA_VEC<T>;
 }
-template <typename Float = double>
-Vec3<Float> ned2eciw(
-        const Vec3<Float> &w_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2eciw(
+    const Eigen::Vector<T, 3> &w_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ned2eciw(eci, w_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1319,16 +1268,15 @@ Vec3<Float> ned2eciw(
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param xyz      3x1 ECEF angular velocity [rad/s]
 /// @returns    NED angular velocity
-template <typename Float = double>
-void ned2ecefw(Vec3<Float> &xyz, const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = ned2ecefDcm(lla0);
+template <typename T = double>
+void ned2ecefw(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
   xyz = C_n_e * w_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> ned2ecefw(const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecefw(const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   ned2ecefw(xyz, w_nb_e, lla0);
   return xyz;
 }
@@ -1341,37 +1289,35 @@ Vec3<Float> ned2ecefw(const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI angular velocity [rad/s]
 /// @returns    ECI angular velocity
-template <typename Float = double>
+template <typename T = double>
 void enu2eciw(
-        Vec3<Float> &eci,
-        const Vec3<Float> &w_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> C_n_i = ned2eciDcm(lla0, dt);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &w_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> C_n_i = ned2eciDcm(lla0, dt);
 
-  Float vn = v_nb_e(0);
-  Float ve = v_nb_e(1);
-  Float phi = lla0(0);
-  Float h = lla0(2);
-  Float sin_phi = std::sin(phi);
+  T vn = v_nb_e(0);
+  T ve = v_nb_e(1);
+  T phi = lla0(0);
+  T h = lla0(2);
+  T sin_phi = std::sin(phi);
 
-  Float trans = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Float Re = WGS84_R0<Float> / std::sqrt(trans);
-  Float Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(trans, 1.5);
-  Vec3<Float> w_en_n{-vn / (Rn + h), ve / (Re + h), ve * std::tan(phi) / (Re + h)};
+  T trans = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  T Re = WGS84_R0<T> / std::sqrt(trans);
+  T Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(trans, 1.5);
+  Eigen::Vector<T, 3> w_en_n{-vn / (Rn + h), ve / (Re + h), ve * std::tan(phi) / (Re + h)};
 
-  eci = C_n_i * (w_nb_e + w_en_n) + WGS84_OMEGA_VEC<Float>;
+  eci = C_n_i * (w_nb_e + w_en_n) + WGS84_OMEGA_VEC<T>;
 }
-template <typename Float = double>
-Vec3<Float> enu2eciw(
-        const Vec3<Float> &w_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2eciw(
+    const Eigen::Vector<T, 3> &w_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   enu2eciw(eci, w_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1382,16 +1328,15 @@ Vec3<Float> enu2eciw(
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param xyz      3x1 ECEF angular velocity [rad/s]
 /// @returns    NED angular velocity
-template <typename Float = double>
-void enu2ecefw(Vec3<Float> &xyz, const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = enu2ecefDcm(lla0);
+template <typename T = double>
+void enu2ecefw(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
   xyz = C_n_e * w_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> enu2ecefw(const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecefw(const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   enu2ecefw(xyz, w_nb_e, lla0);
   return xyz;
 }
@@ -1406,26 +1351,24 @@ Vec3<Float> enu2ecefw(const Vec3<Float> &w_nb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param xyz      3x1 ECEF acceleration [rad/s]
 /// @returns    ECEF acceleration
-template <typename Float = double>
+template <typename T = double>
 void eci2ecefa(
-        Vec3<Float> &xyz,
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_e = eci2ecefDcm(dt);
-  xyz = C_i_e * (a_ib_i - 2.0 * WGS84_OMEGA_SKEW<Float> * v_ib_i +
-                 WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &xyz,
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  xyz = C_i_e * (a_ib_i - 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
+                 WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2ecefa(
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Float &dt)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2ecefa(
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const T &dt) {
+  Eigen::Vector<T, 3> xyz;
   eci2ecefa(xyz, a_ib_i, r_ib_i, v_ib_i, dt);
   return xyz;
 }
@@ -1439,28 +1382,26 @@ Vec3<Float> eci2ecefa(
 /// @param dt       time elapsed between frames [s]
 /// @param ned      3x1 NED acceleration [rad/s]
 /// @returns    NED angular velocity
-template <typename Float = double>
+template <typename T = double>
 void eci2neda(
-        Vec3<Float> &ned,
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_n = eci2nedDcm(lla0, dt);
-  ned = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<Float> * v_ib_i +
-                 WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &ned,
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm(lla0, dt);
+  ned = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
+                 WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2neda(
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2neda(
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> ned;
   eci2enua(ned, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
@@ -1474,28 +1415,26 @@ Vec3<Float> eci2neda(
 /// @param dt       time elapsed between frames [s]
 /// @param enu      3x1 ECU acceleration [rad/s]
 /// @returns    ECU acceleration
-template <typename Float = double>
+template <typename T = double>
 void eci2enua(
-        Vec3<Float> &enu,
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_n = eci2enuDcm(lla0, dt);
-  enu = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<Float> * v_ib_i +
-                 WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float> * r_ib_i);
+    Eigen::Vector<T, 3> &enu,
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm(lla0, dt);
+  enu = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
+                 WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
-template <typename Float = double>
-Vec3<Float> eci2enua(
-        const Vec3<Float> &a_ib_i,
-        const Vec3<Float> &r_ib_i,
-        const Vec3<Float> &v_ib_i,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> eci2enua(
+    const Eigen::Vector<T, 3> &a_ib_i,
+    const Eigen::Vector<T, 3> &r_ib_i,
+    const Eigen::Vector<T, 3> &v_ib_i,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> enu;
   eci2enua(enu, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
@@ -1508,26 +1447,24 @@ Vec3<Float> eci2enua(
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI acceleration [rad/s]
 /// @returns    ECI acceleration
-template <typename Float = double>
+template <typename T = double>
 void ecef2ecia(
-        Vec3<Float> &eci,
-        const Vec3<Float> &a_eb_e,
-        const Vec3<Float> &r_eb_e,
-        const Vec3<Float> &v_eb_e,
-        const Float &dt)
-{
-  Mat3x3<Float> C_i_e = eci2ecefDcm(dt);
-  eci = C_i_e * (a_eb_e - 2.0 * WGS84_OMEGA_SKEW<Float> * v_eb_e +
-                 WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float> * r_eb_e);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &a_eb_e,
+    const Eigen::Vector<T, 3> &r_eb_e,
+    const Eigen::Vector<T, 3> &v_eb_e,
+    const T &dt) {
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  eci = C_i_e * (a_eb_e - 2.0 * WGS84_OMEGA_SKEW<T> * v_eb_e +
+                 WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_eb_e);
 }
-template <typename Float = double>
-Vec3<Float> ecef2ecia(
-        const Vec3<Float> &a_eb_e,
-        const Vec3<Float> &r_eb_e,
-        const Vec3<Float> &v_eb_e,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2ecia(
+    const Eigen::Vector<T, 3> &a_eb_e,
+    const Eigen::Vector<T, 3> &r_eb_e,
+    const Eigen::Vector<T, 3> &v_eb_e,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ecef2ecia(eci, a_eb_e, r_eb_e, v_eb_e, dt);
   return eci;
 }
@@ -1538,16 +1475,15 @@ Vec3<Float> ecef2ecia(
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param ned      3x1 NED acceleration [rad/s]
 /// @returns    ENU acceleration
-template <typename Float = double>
-void ecef2neda(Vec3<Float> &ned, const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2nedDcm(lla0);
+template <typename T = double>
+void ecef2neda(
+    Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
   ned = C_e_n * a_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2neda(const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> ned;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2neda(const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> ned;
   ecef2neda(ned, a_eb_e, lla0);
   return ned;
 }
@@ -1558,16 +1494,15 @@ Vec3<Float> ecef2neda(const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param enu      3x1 ENU acceleration [rad/s]
 /// @returns    ENU acceleration
-template <typename Float = double>
-void ecef2enua(Vec3<Float> &enu, const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_e_n = ecef2enuDcm(lla0);
+template <typename T = double>
+void ecef2enua(
+    Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
   enu = C_e_n * a_eb_e;
 }
-template <typename Float = double>
-Vec3<Float> ecef2enua(const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> enu;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2enua(const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> enu;
   ecef2enua(enu, a_eb_e, lla0);
   return enu;
 }
@@ -1581,40 +1516,36 @@ Vec3<Float> ecef2enua(const Vec3<Float> &a_eb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI acceleration [rad/s]
 /// @returns    ECI acceleration
-template <typename Float = double>
+template <typename T = double>
 void ned2ecia(
-        Vec3<Float> &eci,
-        const Vec3<Float> &a_nb_e,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> r_eb_e = ned2ecef(r_nb_e, lla0);
-  Mat3x3<Float> C_n_e = ned2ecefDcm(lla0);
-  Float omega_sin_phi = WGS84_OMEGA<Float> * std::sin(lla0(0));
-  Float omega_cos_phi = WGS84_OMEGA<Float> * std::cos(lla0(0));
-  Mat3x3<Float> omega_ie_n{
-          {0.0, omega_cos_phi, 0.0},
-          {-omega_cos_phi, 0.0, -omega_sin_phi},
-          {0.0, omega_sin_phi, 0.0}};
-  Mat3x3<Float> C_n_i = ned2eciDcm(lla0, dt);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &a_nb_e,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> r_eb_e = ned2ecef(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
+  T omega_sin_phi = WGS84_OMEGA<T> * std::sin(lla0(0));
+  T omega_cos_phi = WGS84_OMEGA<T> * std::cos(lla0(0));
+  Eigen::Matrix<T, 3, 3> omega_ie_n{
+      {0.0, omega_cos_phi, 0.0}, {-omega_cos_phi, 0.0, -omega_sin_phi}, {0.0, omega_sin_phi, 0.0}};
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
 
   auto a_eb_e = C_n_e * a_nb_e;
   auto v_eb_e = C_n_e * v_nb_e;
   eci = C_n_i * (a_eb_e + 2.0 * omega_ie_n * v_eb_e +
-                 C_e_i * (WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float>, *r_eb_e));
+                 C_e_i * (WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T>, *r_eb_e));
 }
-template <typename Float = double>
-Vec3<Float> ned2ecia(
-        const Vec3<Float> &a_nb_e,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecia(
+    const Eigen::Vector<T, 3> &a_nb_e,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   ned2ecia(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1625,16 +1556,15 @@ Vec3<Float> ned2ecia(
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param xyz      3x1 ECEF acceleration [rad/s]
 /// @returns    ECEF acceleration
-template <typename Float = double>
-void ned2ecefa(Vec3<Float> &xyz, const Vec3<Float> &a_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = ned2ecefDcm(lla0);
+template <typename T = double>
+void ned2ecefa(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
   xyz = C_n_e * a_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> ned2ecefa(const Vec3<Float> &a_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> ned2ecefa(const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   ned2ecefa(xyz, a_nb_e, lla0);
   return xyz;
 }
@@ -1648,40 +1578,36 @@ Vec3<Float> ned2ecefa(const Vec3<Float> &a_nb_e, const Vec3<Float> &lla0)
 /// @param dt       time elapsed between frames [s]
 /// @param eci      3x1 ECI acceleration [rad/s]
 /// @returns    ECI acceleration
-template <typename Float = double>
+template <typename T = double>
 void enu2ecia(
-        Vec3<Float> &eci,
-        const Vec3<Float> &a_nb_e,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> r_eb_e = enu2ecef(r_nb_e, lla0);
-  Mat3x3<Float> C_n_e = enu2ecefDcm(lla0);
-  Float omega_sin_phi = WGS84_OMEGA<Float> * std::sin(lla0(0));
-  Float omega_cos_phi = WGS84_OMEGA<Float> * std::cos(lla0(0));
-  Mat3x3<Float> omega_ie_n{
-          {0.0, 0.0, omega_cos_phi},
-          {0.0, 0.0, omega_sin_phi},
-          {-omega_cos_phi, -omega_sin_phi, 0.0}};
-  Mat3x3<Float> C_n_i = enu2eciDcm(lla0, dt);
-  Mat3x3<Float> C_e_i = ecef2eciDcm(dt);
+    Eigen::Vector<T, 3> &eci,
+    const Eigen::Vector<T, 3> &a_nb_e,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> r_eb_e = enu2ecef(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
+  T omega_sin_phi = WGS84_OMEGA<T> * std::sin(lla0(0));
+  T omega_cos_phi = WGS84_OMEGA<T> * std::cos(lla0(0));
+  Eigen::Matrix<T, 3, 3> omega_ie_n{
+      {0.0, 0.0, omega_cos_phi}, {0.0, 0.0, omega_sin_phi}, {-omega_cos_phi, -omega_sin_phi, 0.0}};
+  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
 
-  Vec3<Float> a_eb_e = C_n_e * a_nb_e;
-  Vec3<Float> v_eb_e = C_n_e * v_nb_e;
+  Eigen::Vector<T, 3> a_eb_e = C_n_e * a_nb_e;
+  Eigen::Vector<T, 3> v_eb_e = C_n_e * v_nb_e;
   eci = C_n_i * (a_eb_e + 2.0 * omega_ie_n * v_eb_e +
-                 C_e_i * (WGS84_OMEGA_SKEW<Float> * WGS84_OMEGA_SKEW<Float>, r_eb_e));
+                 C_e_i * (WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T>, r_eb_e));
 }
-template <typename Float = double>
-Vec3<Float> enu2ecia(
-        const Vec3<Float> &a_nb_e,
-        const Vec3<Float> &r_nb_e,
-        const Vec3<Float> &v_nb_e,
-        const Vec3<Float> &lla0,
-        const Float &dt)
-{
-  Vec3<Float> eci;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecia(
+    const Eigen::Vector<T, 3> &a_nb_e,
+    const Eigen::Vector<T, 3> &r_nb_e,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const Eigen::Vector<T, 3> &lla0,
+    const T &dt) {
+  Eigen::Vector<T, 3> eci;
   enu2ecia(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
@@ -1692,16 +1618,15 @@ Vec3<Float> enu2ecia(
 /// @param lla0     Reference LLA [rad, rad, m]
 /// @param xyz      3x1 ECEF acceleration [rad/s]
 /// @returns    ECEF acceleration
-template <typename Float = double>
-void enu2ecefa(Vec3<Float> &xyz, const Vec3<Float> &a_nb_e, const Vec3<Float> &lla0)
-{
-  Mat3x3<Float> C_n_e = enu2ecefDcm(lla0);
+template <typename T = double>
+void enu2ecefa(
+    Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
   xyz = C_n_e * a_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> enu2ecefa(const Vec3<Float> &a_nb_e, const Vec3<Float> &lla0)
-{
-  Vec3<Float> xyz;
+template <typename T = double>
+Eigen::Vector<T, 3> enu2ecefa(const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
+  Eigen::Vector<T, 3> xyz;
   enu2ecefa(xyz, a_nb_e, lla0);
   return xyz;
 }

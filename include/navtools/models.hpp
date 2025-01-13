@@ -27,15 +27,15 @@ namespace navtools {
 /// @param phi  Latitude [rad]
 /// @param Re   Transverse radius [m]
 /// @returns    Earth's transverse radius at Latitude
-template <typename Float = double>
-void TransverseRadius(Float &Re, const Float &phi) {
-  Float sin_phi = std::sin(phi);
-  Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Re = WGS84_R0<Float> / std::sqrt(t);
+template <typename T = double>
+void TransverseRadius(T &Re, const T &phi) {
+  T sin_phi = std::sin(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  Re = WGS84_R0<T> / std::sqrt(t);
 }
-template <typename Float = double>
-Float TransverseRadius(const Float &phi) {
-  Float Re;
+template <typename T = double>
+T TransverseRadius(const T &phi) {
+  T Re;
   TransverseRadius(Re, phi);
   return Re;
 }
@@ -45,15 +45,15 @@ Float TransverseRadius(const Float &phi) {
 /// @param phi  Latitude [rad]
 /// @param Rn   Meridian radius [m]
 /// @returns    Earth's meridian radius at Latitude
-template <typename Float = double>
-void MeridianRadius(Float &Rn, const Float &phi) {
-  Float sin_phi = std::sin(phi);
-  Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
-  Rn = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(t, 1.5);
+template <typename T = double>
+void MeridianRadius(T &Rn, const T &phi) {
+  T sin_phi = std::sin(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
+  Rn = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(t, 1.5);
 }
-template <typename Float = double>
-Float MeridianRadius(const Float &phi) {
-  Float Rn;
+template <typename T = double>
+T MeridianRadius(const T &phi) {
+  T Rn;
   MeridianRadius(Rn, phi);
   return Rn;
 }
@@ -63,19 +63,19 @@ Float MeridianRadius(const Float &phi) {
 /// @param phi      Latitude [rad]
 /// @param R_es_e   Geocentric radius [m]
 /// @returns    Earth's geocentric radius at Latitude
-template <typename Float = double>
-void GeocentricRadius(Float &R_es_e, const Float &phi) {
-  Float sin_phi2 = std::sin(phi);
+template <typename T = double>
+void GeocentricRadius(T &R_es_e, const T &phi) {
+  T sin_phi2 = std::sin(phi);
   sin_phi2 *= sin_phi2;
-  Float cos_phi = std::cos(phi);
-  Float t = 1.0 - WGS84_E2<Float> * sin_phi2;
-  Float Re = WGS84_R0<Float> / std::sqrt(t);
-  Float o_e2 = 1.0 - WGS84_E2<Float>;
+  T cos_phi = std::cos(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi2;
+  T Re = WGS84_R0<T> / std::sqrt(t);
+  T o_e2 = 1.0 - WGS84_E2<T>;
   R_es_e = Re * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
 }
-template <typename Float = double>
-Float GeocentricRadius(const Float &phi) {
-  Float R_es_e;
+template <typename T = double>
+T GeocentricRadius(const T &phi) {
+  T R_es_e;
   GeocentricRadius(R_es_e, phi);
   return R_es_e;
 }
@@ -85,17 +85,17 @@ Float GeocentricRadius(const Float &phi) {
 /// @param phi      Latitude [rad]
 /// @param radii    vector containing {Transverse, Meridian} radii [m]
 /// @returns    Earth's {Transverse, Meridian} radii at Latitude
-template <typename Float = double>
-void TransAndMerRadii(Vec2<Float> &radii, const Float &phi) {
-  Float sin_phi = std::sin(phi);
-  Float t = 1.0 - WGS84_E2<Float> * sin_phi * sin_phi;
+template <typename T = double>
+void TransAndMerRadii(Eigen::Vector<T, 2> &radii, const T &phi) {
+  T sin_phi = std::sin(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi * sin_phi;
 
-  radii(0) = WGS84_R0<Float> / std::sqrt(t);
-  radii(1) = WGS84_R0<Float> * (1.0 - WGS84_E2<Float>) / std::pow(t, 1.5);
+  radii(0) = WGS84_R0<T> / std::sqrt(t);
+  radii(1) = WGS84_R0<T> * (1.0 - WGS84_E2<T>) / std::pow(t, 1.5);
 }
-template <typename Float = double>
-Vec2<Float> TransAndMerRadii(const Float &phi) {
-  Vec2<Float> radii;
+template <typename T = double>
+Eigen::Vector<T, 2> TransAndMerRadii(const T &phi) {
+  Eigen::Vector<T, 2> radii;
   TransAndMerRadii(radii, phi);
   return radii;
 }
@@ -105,21 +105,21 @@ Vec2<Float> TransAndMerRadii(const Float &phi) {
 /// @param phi      Latitude [rad]
 /// @param radii    vector containing {Transverse, Meridian, Geocentric} radii [m]
 /// @returns    Earth's {Transverse, Meridian, Geocentric} radii at Latitude
-template <typename Float = double>
-void RadiiOfCurvature(Vec3<Float> &radii, const Float &phi) {
-  Float sin_phi2 = std::sin(phi);
+template <typename T = double>
+void RadiiOfCurvature(Eigen::Vector<T, 3> &radii, const T &phi) {
+  T sin_phi2 = std::sin(phi);
   sin_phi2 *= sin_phi2;
-  Float cos_phi = std::cos(phi);
-  Float t = 1.0 - WGS84_E2<Float> * sin_phi2;
-  Float o_e2 = 1.0 - WGS84_E2<Float>;
+  T cos_phi = std::cos(phi);
+  T t = 1.0 - WGS84_E2<T> * sin_phi2;
+  T o_e2 = 1.0 - WGS84_E2<T>;
 
-  radii(0) = WGS84_R0<Float> / std::sqrt(t);
-  radii(1) = WGS84_R0<Float> * o_e2 / std::pow(t, 1.5);
+  radii(0) = WGS84_R0<T> / std::sqrt(t);
+  radii(1) = WGS84_R0<T> * o_e2 / std::pow(t, 1.5);
   radii(2) = radii(0) * std::sqrt(cos_phi * cos_phi + o_e2 * o_e2 * sin_phi2);
 }
-template <typename Float = double>
-Vec3<Float> RadiiOfCurvature(const Float &phi) {
-  Vec3<Float> radii;
+template <typename T = double>
+Eigen::Vector<T, 3> RadiiOfCurvature(const T &phi) {
+  Eigen::Vector<T, 3> radii;
   RadiiOfCurvature(radii, phi);
   return radii;
 }
@@ -133,31 +133,31 @@ Vec3<Float> RadiiOfCurvature(const Float &phi) {
 /// @param w_ie_n   size 3 vector of earth's rotation in the 'NAV' frame
 /// @param W_ie_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    earth's rotation in the 'NAV' frame
-template <typename Float = double>
-void EarthRate(Vec3<Float> &w_ie_n, const Float &phi, const std::string frame = "ned") {
+template <typename T = double>
+void EarthRate(Eigen::Vector<T, 3> &w_ie_n, const T &phi, const std::string frame = "ned") {
   if (frame == "ned") {
-    w_ie_n(0) = WGS84_OMEGA<Float> * std::cos(phi);
+    w_ie_n(0) = WGS84_OMEGA<T> * std::cos(phi);
     w_ie_n(1) = 0.0;
-    w_ie_n(2) = WGS84_OMEGA<Float> * std::sin(phi);
+    w_ie_n(2) = WGS84_OMEGA<T> * std::sin(phi);
   } else if (frame == "enu") {
     w_ie_n(0) = 0.0;
-    w_ie_n(1) = WGS84_OMEGA<Float> * std::cos(phi);
-    w_ie_n(2) = -WGS84_OMEGA<Float> * std::sin(phi);
+    w_ie_n(1) = WGS84_OMEGA<T> * std::cos(phi);
+    w_ie_n(2) = -WGS84_OMEGA<T> * std::sin(phi);
   }
 }
-template <typename Float = double>
-Vec3<Float> EarthRate(const Float &phi, const std::string frame = "ned") {
-  Vec3<Float> w_ie_n;
+template <typename T = double>
+Eigen::Vector<T, 3> EarthRate(const T &phi, const std::string frame = "ned") {
+  Eigen::Vector<T, 3> w_ie_n;
   EarthRate(w_ie_n, phi, frame);
   return w_ie_n;
 }
-template <typename Float = double>
-void EarthRateSkew(Mat3x3<Float> &W_ie_n, const Float &phi, const std::string frame = "ned") {
+template <typename T = double>
+void EarthRateSkew(Eigen::Matrix<T, 3, 3> &W_ie_n, const T &phi, const std::string frame = "ned") {
   W_ie_n = Skew(EarthRate(phi, frame));
 }
-template <typename Float = double>
-Mat3x3<Float> EarthRateSkew(const Float &phi, const std::string frame = "ned") {
-  Mat3x3<Float> W_ie_n;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi, const std::string frame = "ned") {
+  Eigen::Matrix<T, 3, 3> W_ie_n;
   EarthRateSkew(W_ie_n, phi, frame);
   return W_ie_n;
 }
@@ -170,44 +170,48 @@ Mat3x3<Float> EarthRateSkew(const Float &phi, const std::string frame = "ned") {
 /// @param w_en_n   size 3 vector of earth's rotation in the 'NAV' frame
 /// @param W_en_n   3x3 skew-symmetric matrix of earth's rotation in the 'NAV' frame
 /// @returns    Transport rate in the 'NAV' frame
-template <typename Float = double>
+template <typename T = double>
 void TransportRate(
-    Vec3<Float> &w_en_n,
-    const Vec3<Float> &lla,
-    const Vec3<Float> &v_nb_e,
+    Eigen::Vector<T, 3> &w_en_n,
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
-  Vec2<Float> radii = TransAndMerRadii(lla(0));
+  Eigen::Vector<T, 2> radii = TransAndMerRadii(lla(0));
   if (frame == "ned") {
-    Float ve_Reh = v_nb_e(1) / (radii(0) + lla(2));  // ve / (Re + h)
-    w_en_n(0) = ve_Reh;                              // ve / (Re + h)
-    w_en_n(1) = -v_nb_e(0) / (radii(1) + lla(2));    // -vn / (Rn + h)
-    w_en_n(2) = -ve_Reh * std::tan(lla(0));          // -ve * tan(phi) / (Re + h)
+    T ve_Reh = v_nb_e(1) / (radii(0) + lla(2));    // ve / (Re + h)
+    w_en_n(0) = ve_Reh;                            // ve / (Re + h)
+    w_en_n(1) = -v_nb_e(0) / (radii(1) + lla(2));  // -vn / (Rn + h)
+    w_en_n(2) = -ve_Reh * std::tan(lla(0));        // -ve * tan(phi) / (Re + h)
   } else if (frame == "enu") {
-    Float ve_Reh = v_nb_e(0) / (radii(0) + lla(2));  // ve / (Re + h)
-    w_en_n(0) = -v_nb_e(1) / (radii(1) + lla(2));    // -vn / (Rn + h)
-    w_en_n(1) = ve_Reh;                              // ve / (Re + h)
-    w_en_n(2) = ve_Reh * std::tan(lla(0));           // ve * tan(phi) / (Re + h)
+    T ve_Reh = v_nb_e(0) / (radii(0) + lla(2));    // ve / (Re + h)
+    w_en_n(0) = -v_nb_e(1) / (radii(1) + lla(2));  // -vn / (Rn + h)
+    w_en_n(1) = ve_Reh;                            // ve / (Re + h)
+    w_en_n(2) = ve_Reh * std::tan(lla(0));         // ve * tan(phi) / (Re + h)
   }
 }
-template <typename Float = double>
-Vec3<Float> TransportRate(
-    const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
-  Vec3<Float> w_en_n;
+template <typename T = double>
+Eigen::Vector<T, 3> TransportRate(
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const std::string frame = "ned") {
+  Eigen::Vector<T, 3> w_en_n;
   TransportRate(w_en_n, lla, v_nb_e, frame);
   return w_en_n;
 }
-template <typename Float = double>
+template <typename T = double>
 void TransportRateSkew(
-    Mat3x3<Float> &W_en_n,
-    const Vec3<Float> &lla,
-    const Vec3<Float> &v_nb_e,
+    Eigen::Matrix<T, 3, 3> &W_en_n,
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
   W_en_n = Skew(TransportRate(lla, v_nb_e, frame));
 }
-template <typename Float = double>
-Mat3x3<Float> TransportRateSkew(
-    const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
-  Mat3x3<Float> W_en_n;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> TransportRateSkew(
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const std::string frame = "ned") {
+  Eigen::Matrix<T, 3, 3> W_en_n;
   TransportRateSkew(W_en_n, lla, v_nb_e, frame);
   return W_en_n;
 }
@@ -219,20 +223,22 @@ Mat3x3<Float> TransportRateSkew(
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param coriolis size 3 coriolis effect
 /// @returns    Coriolis effect
-template <typename Float = double>
+template <typename T = double>
 void CoriolisRate(
-    Vec3<Float> &coriolis,
-    const Vec3<Float> &lla,
-    const Vec3<Float> &v_nb_e,
+    Eigen::Vector<T, 3> &coriolis,
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
-  Vec3<Float> w_ie_n = EarthRate(lla(0), frame);
-  Vec3<Float> w_en_n = TransportRate(lla, v_nb_e, frame);
+  Eigen::Vector<T, 3> w_ie_n = EarthRate(lla(0), frame);
+  Eigen::Vector<T, 3> w_en_n = TransportRate(lla, v_nb_e, frame);
   coriolis = skew(w_en_n + 2.0 * w_ie_n) * v_nb_e;
 }
-template <typename Float = double>
-Vec3<Float> CoriolisRate(
-    const Vec3<Float> &lla, const Vec3<Float> &v_nb_e, const std::string frame = "ned") {
-  Vec3<Float> coriolis;
+template <typename T = double>
+Eigen::Vector<T, 3> CoriolisRate(
+    const Eigen::Vector<T, 3> &lla,
+    const Eigen::Vector<T, 3> &v_nb_e,
+    const std::string frame = "ned") {
+  Eigen::Vector<T, 3> coriolis;
   CoriolisRate(coriolis, lla, v_nb_e, frame);
   return coriolis;
 }
@@ -244,16 +250,15 @@ Vec3<Float> CoriolisRate(
 /// @param phi  Latitude [rad]
 /// @param g0   Somigliana gravity
 /// @returns Somgiliana gravity
-template <typename Float = double>
-void Somigliana(Float &g0, const Float &phi) {
-  Float sin_phi2 = std::sin(phi);
+template <typename T = double>
+void Somigliana(T &g0, const T &phi) {
+  T sin_phi2 = std::sin(phi);
   sin_phi2 *= sin_phi2;
-  g0 =
-      9.7803253359 * ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<Float> * sin_phi2));
+  g0 = 9.7803253359 * ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<T> * sin_phi2));
 }
-template <typename Float = double>
-Float Somigliana(const Float &phi) {
-  Float g0;
+template <typename T = double>
+T Somigliana(const T &phi) {
+  T g0;
   Somigliana(g0, phi);
   return g0;
 }
@@ -264,22 +269,22 @@ Float Somigliana(const Float &phi) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param g        size 3 Local/NAV frame gravity vector
 /// @returns    Local/NAV frame gravity
-template <typename Float = double>
-void LocalGravity(Vec3<Float> &g, const Vec3<Float> &lla, const std::string frame = "ned") {
-  Float sin_phi2 = std::sin(lla(0));
+template <typename T = double>
+void LocalGravity(
+    Eigen::Vector<T, 3> &g, const Eigen::Vector<T, 3> &lla, const std::string frame = "ned") {
+  T sin_phi2 = std::sin(lla(0));
   sin_phi2 *= sin_phi2;
-  Float g0 =
-      9.7803253359 * ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<Float> * sin_phi2));
-  Float R02 = WGS84_R0<Float> * WGS84_R0<Float>;
-  Float OMEGA2 = WGS84_OMEGA<Float> * WGS84_OMEGA<Float>;
-  Float h2 = lla(2) * lla(2);
+  T g0 = 9.7803253359 * ((1.0 + 0.001931853 * sin_phi2) / std::sqrt(1.0 - WGS84_E2<T> * sin_phi2));
+  T R02 = WGS84_R0<T> * WGS84_R0<T>;
+  T OMEGA2 = WGS84_OMEGA<T> * WGS84_OMEGA<T>;
+  T h2 = lla(2) * lla(2);
   if (frame == "ned") {
     // clang-format off
         g(0) = -8.08e-9 * lla(2) * std::sin(2.0 * lla(0));
         g(1) = 0.0;
         g(2) = g0 * (1.0 - 
-                    (2.0 / WGS84_R0<Float>) *
-                    (1.0 + WGS84_F<Float> * (1.0 - 2.0 * sin_phi2) + (OMEGA2 * R02 * WGS84_RP<Float> / WGS84_MU<Float>)) *
+                    (2.0 / WGS84_R0<T>) *
+                    (1.0 + WGS84_F<T> * (1.0 - 2.0 * sin_phi2) + (OMEGA2 * R02 * WGS84_RP<T> / WGS84_MU<T>)) *
                     lla(2) + (3.0 * h2 / R02));
     // clang-format on
   } else if (frame == "enu") {
@@ -287,15 +292,15 @@ void LocalGravity(Vec3<Float> &g, const Vec3<Float> &lla, const std::string fram
         g(0) = 0.0;
         g(1) = -8.08e-9 * lla(2) * std::sin(2.0 * lla(0));
         g(2) = -g0 * (1.0 - 
-                     (2.0 / WGS84_R0<Float>) *
-                     (1.0 + WGS84_F<Float> * (1.0 - 2.0 * sin_phi2) + (OMEGA2 * R02 * WGS84_RP<Float> / WGS84_MU<Float>)) *
+                     (2.0 / WGS84_R0<T>) *
+                     (1.0 + WGS84_F<T> * (1.0 - 2.0 * sin_phi2) + (OMEGA2 * R02 * WGS84_RP<T> / WGS84_MU<T>)) *
                      lla(2) + (3.0 * h2 / R02));
     // clang-format on
   }
 }
-template <typename Float = double>
-Vec3<Float> LocalGravity(const Vec3<Float> &lla, const std::string frame = "ned") {
-  Vec3<Float> g;
+template <typename T = double>
+Eigen::Vector<T, 3> LocalGravity(const Eigen::Vector<T, 3> &lla, const std::string frame = "ned") {
+  Eigen::Vector<T, 3> g;
   LocalGravity(g, lla, frame);
   return g;
 }
@@ -306,31 +311,32 @@ Vec3<Float> LocalGravity(const Vec3<Float> &lla, const std::string frame = "ned"
 /// @param g        size 3 ECEF frame gravity vector
 /// @param gamma    size 3 ECEF frame gravitational acceleration
 /// @returns    ECEF frame gravity
-template <typename Float = double>
-void EcefGravity(Vec3<Float> &g, Vec3<Float> &gamma, const Vec3<Float> &xyz) {
-  Float mag_r = xyz.norm();
+template <typename T = double>
+void EcefGravity(
+    Eigen::Vector<T, 3> &g, Eigen::Vector<T, 3> &gamma, const Eigen::Vector<T, 3> &xyz) {
+  T mag_r = xyz.norm();
   if (mag_r == 0.0) {
     g << 0.0, 0.0, 0.0;
     gamma << 0.0, 0.0, 0.0;
   } else {
-    Float zeta = 5.0 * std::pow(xyz(2) / mag_r, 2.0);
-    Float omega2 = WGS84_OMEGA<Float> * WGS84_OMEGA<Float>;
-    Vec3<Float> v{1.0 - zeta, 1.0 - zeta, 3.0 - zeta};
+    T zeta = 5.0 * std::pow(xyz(2) / mag_r, 2.0);
+    T omega2 = WGS84_OMEGA<T> * WGS84_OMEGA<T>;
+    Eigen::Vector<T, 3> v{1.0 - zeta, 1.0 - zeta, 3.0 - zeta};
 
-    gamma = -WGS84_MU<Float> / std::pow(mag_r, 3.0) *
-            (xyz + 1.5 * J2<Float> * std::pow(WGS84_R0<Float> / mag_r, 2.0) * v * xyz);
+    gamma = -WGS84_MU<T> / std::pow(mag_r, 3.0) *
+            (xyz + 1.5 * J2<T> * std::pow(WGS84_R0<T> / mag_r, 2.0) * v * xyz);
     v << xyz(0) * omega2, xyz(1) * omega2, 0.0;
     g = gamma + v;
   }
 }
-template <typename Float = double>
-void EcefGravity(Vec3<Float> &g, const Vec3<Float> &xyz) {
-  Vec3<Float> gamma;
+template <typename T = double>
+void EcefGravity(Eigen::Vector<T, 3> &g, const Eigen::Vector<T, 3> &xyz) {
+  Eigen::Vector<T, 3> gamma;
   EcefGravity(g, gamma, xyz);
 }
-template <typename Float = double>
-Vec3<Float> EcefGravity(const Vec3<Float> &xyz) {
-  Vec3<Float> g;
+template <typename T = double>
+Eigen::Vector<T, 3> EcefGravity(const Eigen::Vector<T, 3> &xyz) {
+  Eigen::Vector<T, 3> g;
   EcefGravity(g, xyz);
   return g;
 }
@@ -343,13 +349,13 @@ Vec3<Float> EcefGravity(const Vec3<Float> &xyz) {
 /// @param user_xyz User position [m]
 /// @param r        Calculated range [m]
 /// @returns    Range
-template <typename Float = double>
-void CalcRange(Float &r, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
+template <typename T = double>
+void CalcRange(T &r, const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3> &user_xyz) {
   r = (user_xyz - sv_xyz).norm();
 }
-template <typename Float = double>
-Float CalcRange(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
-  Float r;
+template <typename T = double>
+T CalcRange(const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3> &user_xyz) {
+  T r;
   CalcRange(r, sv_xyz, user_xyz);
   return r;
 }
@@ -360,14 +366,18 @@ Float CalcRange(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
 /// @param user_xyz User position [m]
 /// @param u        Calculated unit vector [m]
 /// @returns    Unit vector
-template <typename Float = double>
-void CalcUnitVec(Vec3<Float> &u, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
-  Vec3<Float> dr = user_xyz - sv_xyz;
+template <typename T = double>
+void CalcUnitVec(
+    Eigen::Vector<T, 3> &u,
+    const Eigen::Vector<T, 3> &sv_xyz,
+    const Eigen::Vector<T, 3> &user_xyz) {
+  Eigen::Vector<T, 3> dr = user_xyz - sv_xyz;
   u = dr / dr.norm();
 }
-template <typename Float = double>
-Vec3<Float> CalcUnitVec(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
-  Vec3<Float> u;
+template <typename T = double>
+Eigen::Vector<T, 3> CalcUnitVec(
+    const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3> &user_xyz) {
+  Eigen::Vector<T, 3> u;
   CalcUnitVec(u, sv_xyz, user_xyz);
   return u;
 }
@@ -379,10 +389,13 @@ Vec3<Float> CalcUnitVec(const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) 
 /// @param r        Calculated range [m]
 /// @param u        Calculated unit vector [m]
 /// @returns    Range and unit vector
-template <typename Float = double>
+template <typename T = double>
 void CalcRangeAndUnitVec(
-    Float &r, Vec3<Float> &u, const Vec3<Float> &sv_xyz, const Vec3<Float> &user_xyz) {
-  Vec3<Float> dr = user_xyz - sv_xyz;
+    T &r,
+    Eigen::Vector<T, 3> &u,
+    const Eigen::Vector<T, 3> &sv_xyz,
+    const Eigen::Vector<T, 3> &user_xyz) {
+  Eigen::Vector<T, 3> dr = user_xyz - sv_xyz;
   r = dr.norm();
   u = dr / r;
 }
@@ -393,15 +406,21 @@ void CalcRangeAndUnitVec(
 /// @param sv_vel   Satellite velocity [m/s]
 /// @param user_vel User velocity [m/s]
 /// @param rr       Calculated range-rate [m/s]
-template <typename Float = double>
+template <typename T = double>
 void CalcRangeRate(
-    Float &rr, const Vec3<Float> &u, const Vec3<Float> &sv_vel, const Vec3<Float> &user_vel) {
-  Vec3<Float> dv = user_vel - sv_vel;
+    T &rr,
+    const Eigen::Vector<T, 3> &u,
+    const Eigen::Vector<T, 3> &sv_vel,
+    const Eigen::Vector<T, 3> &user_vel) {
+  Eigen::Vector<T, 3> dv = user_vel - sv_vel;
   rr = u(0) * dv(0) + u(1) * dv(1) + u(2) * dv(2);
 }
-template <typename Float = double>
-Float CalcRangeRate(const Vec3<Float> &u, const Vec3<Float> &sv_vel, const Vec3<Float> &user_vel) {
-  Float rr;
+template <typename T = double>
+T CalcRangeRate(
+    const Eigen::Vector<T, 3> &u,
+    const Eigen::Vector<T, 3> &sv_vel,
+    const Eigen::Vector<T, 3> &user_vel) {
+  T rr;
   CalcRangeRate(rr, u, sv_vel, user_vel);
   return rr;
 }

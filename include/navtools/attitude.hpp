@@ -26,35 +26,35 @@ namespace navtools {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
-template <bool IsNed = true, typename Float = double>
-void euler2quat(Vec4<Float> &q, const Vec3<Float> &e) {
-    Vec3<Float> x = e / 2.0;
-    Float Sr = std::sin(x(0));
-    Float Sp = std::sin(x(1));
-    Float Cr = std::cos(x(0));
-    Float Cp = std::cos(x(1));
-    Float a = Sp * Cr;
-    Float b = Cp * Sr;
-    Float c = Sp * Sr;
-    Float d = Cp * Cr;
-    if constexpr (IsNed) {
-        // ned frame
-        Float Cy = std::cos(x(2));
-        Float Sy = std::sin(x(2));
-        q << Cy * d + Sy * c, Cy * b - Sy * a, Cy * a + Sy * b, Sy * d - Cy * c;
-    } else {
-        // enu frame
-        Float Cy_pio4 = std::cos(x(2) + PI<Float> / 4.0);
-        Float Sy_pio4 = std::sin(x(2) + PI<Float> / 4.0);
-        q << -a * Cy_pio4 - b * Sy_pio4, -c * Cy_pio4 + d * Sy_pio4, c * Sy_pio4 + d * Cy_pio4,
-                a * Sy_pio4 - b * Cy_pio4;
-    }
+template <bool IsNed = true, typename T = double>
+void euler2quat(Eigen::Vector<T, 4> &q, const Eigen::Vector<T, 3> &e) {
+  Eigen::Vector<T, 3> x = e / 2.0;
+  T Sr = std::sin(x(0));
+  T Sp = std::sin(x(1));
+  T Cr = std::cos(x(0));
+  T Cp = std::cos(x(1));
+  T a = Sp * Cr;
+  T b = Cp * Sr;
+  T c = Sp * Sr;
+  T d = Cp * Cr;
+  if constexpr (IsNed) {
+    // ned frame
+    T Cy = std::cos(x(2));
+    T Sy = std::sin(x(2));
+    q << Cy * d + Sy * c, Cy * b - Sy * a, Cy * a + Sy * b, Sy * d - Cy * c;
+  } else {
+    // enu frame
+    T Cy_pio4 = std::cos(x(2) + PI<T> / 4.0);
+    T Sy_pio4 = std::sin(x(2) + PI<T> / 4.0);
+    q << -a * Cy_pio4 - b * Sy_pio4, -c * Cy_pio4 + d * Sy_pio4, c * Sy_pio4 + d * Cy_pio4,
+        a * Sy_pio4 - b * Cy_pio4;
+  }
 }
-template <bool IsNed = true, typename Float = double>
-Vec4<Float> euler2quat(const Vec3<Float> &e) {
-    Vec4<Float> q;
-    euler2quat<IsNed, Float>(q, e);
-    return q;
+template <bool IsNed = true, typename T = double>
+Eigen::Vector<T, 4> euler2quat(const Eigen::Vector<T, 3> &e) {
+  Eigen::Vector<T, 4> q;
+  euler2quat<IsNed, T>(q, e);
+  return q;
 }
 
 //! === EULER2DCM ===
@@ -63,33 +63,33 @@ Vec4<Float> euler2quat(const Vec3<Float> &e) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
-template <bool IsNed = true, typename Float = double>
-void euler2dcm(Mat3x3<Float> &R, const Vec3<Float> &e) {
-    Float Sr = std::sin(e(0));
-    Float Sp = std::sin(e(1));
-    Float Sy = std::sin(e(2));
-    Float Cr = std::cos(e(0));
-    Float Cp = std::cos(e(1));
-    Float Cy = std::cos(e(2));
-    if constexpr (IsNed) {
-        // clang-format off
+template <bool IsNed = true, typename T = double>
+void euler2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 3> &e) {
+  T Sr = std::sin(e(0));
+  T Sp = std::sin(e(1));
+  T Sy = std::sin(e(2));
+  T Cr = std::cos(e(0));
+  T Cp = std::cos(e(1));
+  T Cy = std::cos(e(2));
+  if constexpr (IsNed) {
+    // clang-format off
         R << Cp * Cy, Sr * Sp * Cy - Cr * Sy, Cr * Sp * Cy + Sr * Sy,
              Cp * Sy, Sr * Sp * Sy + Cr * Cy, Cr * Sp * Sy - Cy * Sr,
                  -Sp,                Cp * Sr,                Cp * Cr;
-        // clang-format on
-    } else {
-        // clang-format off
+    // clang-format on
+  } else {
+    // clang-format off
         R << Cp * Sy, Sr * Sp * Sy + Cr * Cy, Cr * Sp * Sy - Sr * Cy,
              Cp * Cy, Sr * Sp * Cy - Cr * Sy, Cr * Sp * Cy + Sr * Sy,
                   Sp,               -Sr * Cp,               -Cr * Cp;
-        // clang-format on
-    }
+    // clang-format on
+  }
 }
-template <bool IsNed = true, typename Float = double>
-Mat3x3<Float> euler2dcm(const Vec3<Float> &e) {
-    Mat3x3<Float> R;
-    euler2dcm<IsNed, Float>(R, e);
-    return R;
+template <bool IsNed = true, typename T = double>
+Eigen::Matrix<T, 3, 3> euler2dcm(const Eigen::Vector<T, 3> &e) {
+  Eigen::Matrix<T, 3, 3> R;
+  euler2dcm<IsNed, T>(R, e);
+  return R;
 }
 
 //! === QUAT2EULER ===
@@ -98,27 +98,36 @@ Mat3x3<Float> euler2dcm(const Vec3<Float> &e) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <bool IsNed = true, typename Float = double>
-void quat2euler(Vec3<Float> &e, const Vec4<Float> &q) {
-    Float w = q(0);
-    Float x = q(1);
-    Float y = q(2);
-    Float z = q(3);
-    if constexpr (IsNed) {
-        e(0) = std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
-        e(1) = std::asin(2.0 * (w * y - x * z));
-        e(2) = std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-    } else {
-        e(0) = PI<Float> + std::atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y));
-        e(1) = -std::asin(2.0 * (w * y - x * z));
-        e(2) = HALF_PI<Float> - std::atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z));
-    }
+template <bool IsNed = true, typename T = double>
+void quat2euler(Eigen::Vector<T, 3> &e, const Eigen::Vector<T, 4> &q) {
+  T w = q(0);
+  T x = q(1);
+  T y = q(2);
+  T z = q(3);
+  T x2 = x * x;
+  T y2 = y * y;
+  T z2 = z * z;
+  T xw = x * w;
+  T xy = x * y;
+  T xz = x * z;
+  T yw = y * w;
+  T yz = y * z;
+  T zw = z * w;
+  if constexpr (IsNed) {
+    e(0) = std::atan2(2.0 * (xw + yz), 1.0 - 2.0 * (x2 + y2));
+    e(1) = std::asin(2.0 * (yw - xz));
+    e(2) = std::atan2(2.0 * (zw + xy), 1.0 - 2.0 * (y2 + z2));
+  } else {
+    e(0) = PI<T> + std::atan2(2.0 * (xw + yz), 1.0 - 2.0 * (x2 + y2));
+    e(1) = -std::asin(2.0 * (yw - xz));
+    e(2) = HALF_PI<T> - std::atan2(2.0 * (zw + xy), 1.0 - 2.0 * (y2 + z2));
+  }
 }
-template <bool IsNed = true, typename Float = double>
-Vec3<Float> quat2euler(const Vec4<Float> &q) {
-    Vec3<Float> e;
-    quat2euler<IsNed, Float>(e, q);
-    return e;
+template <bool IsNed = true, typename T = double>
+Eigen::Vector<T, 3> quat2euler(const Eigen::Vector<T, 4> &q) {
+  Eigen::Vector<T, 3> e;
+  quat2euler<IsNed, T>(e, q);
+  return e;
 }
 
 //! === QUAT2DCM ===
@@ -126,26 +135,36 @@ Vec3<Float> quat2euler(const Vec4<Float> &q) {
 /// @param q        size 4 quaternion rotation
 /// @param R        3x3 DCM
 /// @returns    3x3 ZYX DCM
-template <typename Float = double>
-void quat2dcm(Mat3x3<Float> &R, const Vec4<Float> &q) {
-    // clang-format off
-    Float w = q(0);
-    Float x = q(1);
-    Float y = q(2);
-    Float z = q(3);
-    R << w * w + x * x - y * y - z * z,         2.0 * (x * y - w * z),         2.0 * (w * y + x * z),
-                 2.0 * (w * z + x * y), w * w - x * x + y * y - z * z,         2.0 * (y * z - w * x),
-                 2.0 * (x * z - w * y),         2.0 * (y * z + w * x), w * w - x * x - y * y + z * z;
-    // R = {{w*w + x*x - y*y - z*z,       2.0*(x*y + z*w),       2.0*(x*z - y*w)},
-    //      {      2.0*(x*y - z*w), w*w - x*x + y*y - z*z,       2.0*(y*z + x*w)},
-    //      {      2.0*(x*z + y*w),       2.0*(y*z - x*w), w*w - x*x - y*y + z*z}};
-    // clang-format on
+template <typename T = double>
+void quat2dcm(Eigen::Matrix<T, 3, 3> &R, const Eigen::Vector<T, 4> &q) {
+  T w = q(0);
+  T x = q(1);
+  T y = q(2);
+  T z = q(3);
+  T w2 = w * w;
+  T x2 = x * x;
+  T y2 = y * y;
+  T z2 = z * z;
+  T xw = x * w;
+  T xy = x * y;
+  T xz = x * z;
+  T yw = y * w;
+  T yz = y * z;
+  T zw = z * w;
+  // clang-format off
+  R << w2 + x2 - y2 - z2,   2.0 * (xy - zw),   2.0 * (yw + xz),
+         2.0 * (zw + xy), w2 - x2 + y2 - z2,   2.0 * (yz - xw),
+         2.0 * (xz - yw),   2.0 * (yz + xw), w2 - x2 - y2 + z2;
+  // R = {{w*w + x*x - y*y - z*z,       2.0*(x*y + z*w),       2.0*(x*z - y*w)},
+  //      {      2.0*(x*y - z*w), w*w - x*x + y*y - z*z,       2.0*(y*z + x*w)},
+  //      {      2.0*(x*z + y*w),       2.0*(y*z - x*w), w*w - x*x - y*y + z*z}};
+  // clang-format on
 }
-template <typename Float = double>
-Mat3x3<Float> quat2dcm(const Vec4<Float> &q) {
-    Mat3x3<Float> R;
-    quat2dcm(R, q);
-    return R;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> quat2dcm(const Eigen::Vector<T, 4> &q) {
+  Eigen::Matrix<T, 3, 3> R;
+  quat2dcm(R, q);
+  return R;
 }
 
 //! === DCM2EULER ===
@@ -154,23 +173,23 @@ Mat3x3<Float> quat2dcm(const Vec4<Float> &q) {
 /// @param frame    string representing the NAV-frame to rotate into
 /// @param e        size 3 RPY euler angles [radians]
 /// @returns    3x1 RPY euler angles [radians]
-template <bool IsNed = true, typename Float = double>
-void dcm2euler(Vec3<Float> &e, const Mat3x3<Float> &R) {
-    if constexpr (IsNed) {
-        e(0) = std::atan2(R(2, 1), R(2, 2));
-        e(1) = -std::asin(R(2, 0));
-        e(2) = std::atan2(R(1, 0), R(0, 0));
-    } else {
-        e(0) = std::atan2(-R(2, 1), -R(2, 2));
-        e(1) = std::asin(R(2, 0));
-        e(2) = std::atan2(R(0, 0), R(1, 0));
-    }
+template <bool IsNed = true, typename T = double>
+void dcm2euler(Eigen::Vector<T, 3> &e, const Eigen::Matrix<T, 3, 3> &R) {
+  if constexpr (IsNed) {
+    e(0) = std::atan2(R(2, 1), R(2, 2));
+    e(1) = -std::asin(R(2, 0));
+    e(2) = std::atan2(R(1, 0), R(0, 0));
+  } else {
+    e(0) = std::atan2(-R(2, 1), -R(2, 2));
+    e(1) = std::asin(R(2, 0));
+    e(2) = std::atan2(R(0, 0), R(1, 0));
+  }
 }
-template <bool IsNed = true, typename Float = double>
-Vec3<Float> dcm2euler(const Mat3x3<Float> &R) {
-    Vec3<Float> e;
-    dcm2euler<IsNed, Float>(e, R);
-    return e;
+template <bool IsNed = true, typename T = double>
+Eigen::Vector<T, 3> dcm2euler(const Eigen::Matrix<T, 3, 3> &R) {
+  Eigen::Vector<T, 3> e;
+  dcm2euler<IsNed, T>(e, R);
+  return e;
 }
 
 //! === DCM2QUAT ===
@@ -178,28 +197,28 @@ Vec3<Float> dcm2euler(const Mat3x3<Float> &R) {
 /// @param R        3x3 DCM
 /// @param q        size 4 quaternion rotation
 /// @returns    4x1 ZYX quaternion
-template <typename Float = double>
-void dcm2quat(Vec4<Float> &q, const Mat3x3<Float> &R) {
-    Float q_w = std::sqrt(1.0 + R(0, 0) + R(1, 1) + R(2, 2)) / 2.0;
-    if (q_w > 0.01) {
-        Float q_w_4 = 4.0 * q_w;
-        q(0) = q_w;
-        q(1) = (R(2, 1) - R(1, 2)) / q_w_4;
-        q(2) = (R(0, 2) - R(2, 0)) / q_w_4;
-        q(3) = (R(1, 0) - R(0, 1)) / q_w_4;
-    } else {
-        q(1) = std::sqrt(1.0 + R(0, 0) - R(1, 1) - R(2, 2)) / 2.0;
-        Float q_x_4 = 4.0 * q(1);
-        q(0) = (R(2, 1) - R(1, 2)) / q_x_4;
-        q(2) = (R(0, 1) + R(1, 0)) / q_x_4;
-        q(3) = (R(0, 2) + R(2, 0)) / q_x_4;
-    }
+template <typename T = double>
+void dcm2quat(Eigen::Vector<T, 4> &q, const Eigen::Matrix<T, 3, 3> &R) {
+  T q_w = std::sqrt(1.0 + R(0, 0) + R(1, 1) + R(2, 2)) / 2.0;
+  if (q_w > 0.01) {
+    T q_w_4 = 4.0 * q_w;
+    q(0) = q_w;
+    q(1) = (R(2, 1) - R(1, 2)) / q_w_4;
+    q(2) = (R(0, 2) - R(2, 0)) / q_w_4;
+    q(3) = (R(1, 0) - R(0, 1)) / q_w_4;
+  } else {
+    q(1) = std::sqrt(1.0 + R(0, 0) - R(1, 1) - R(2, 2)) / 2.0;
+    T q_x_4 = 4.0 * q(1);
+    q(0) = (R(2, 1) - R(1, 2)) / q_x_4;
+    q(2) = (R(0, 1) + R(1, 0)) / q_x_4;
+    q(3) = (R(0, 2) + R(2, 0)) / q_x_4;
+  }
 }
-template <typename Float = double>
-Vec4<Float> dcm2quat(const Mat3x3<Float> &R) {
-    Vec4<Float> q;
-    dcm2quat(q, R);
-    return q;
+template <typename T = double>
+Eigen::Vector<T, 4> dcm2quat(const Eigen::Matrix<T, 3, 3> &R) {
+  Eigen::Vector<T, 4> q;
+  dcm2quat(q, R);
+  return q;
 }
 
 //* ===== Single Axes Rotation Matrices ======================================================== *//
@@ -209,17 +228,17 @@ Vec4<Float> dcm2quat(const Mat3x3<Float> &R) {
 /// @param C    3x3 DCM
 /// @param x    euler angle ]radians]
 /// @returns    3x3 x-axis DCM rotation
-template <typename Float = double>
-void RotX(Mat3x3<Float> &C, const Float &x) {
-    Float sx = std::sin(x);
-    Float cx = std::cos(x);
-    C << 1.0, 0.0, 0.0, 0.0, cx, -sx, 0.0, sx, cx;
+template <typename T = double>
+void RotX(Eigen::Matrix<T, 3, 3> &C, const T &x) {
+  T sx = std::sin(x);
+  T cx = std::cos(x);
+  C << 1.0, 0.0, 0.0, 0.0, cx, -sx, 0.0, sx, cx;
 }
-template <typename Float = double>
-Mat3x3<Float> RotX(const Float &x) {
-    Mat3x3<Float> C;
-    RotX(C, x);
-    return C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> RotX(const T &x) {
+  Eigen::Matrix<T, 3, 3> C;
+  RotX(C, x);
+  return C;
 }
 
 //! === ROTY ===
@@ -227,17 +246,17 @@ Mat3x3<Float> RotX(const Float &x) {
 /// @param C    3x3 DCM
 /// @param y    euler angle ]radians]
 /// @returns    3x3 y-axis DCM rotation
-template <typename Float = double>
-void RotY(Mat3x3<Float> &C, const Float &y) {
-    Float sy = std::sin(y);
-    Float cy = std::cos(y);
-    C = {{cy, 0.0, sy}, {0.0, 1.0, 0.0}, {-sy, 0.0, cy}};
+template <typename T = double>
+void RotY(Eigen::Matrix<T, 3, 3> &C, const T &y) {
+  T sy = std::sin(y);
+  T cy = std::cos(y);
+  C = {{cy, 0.0, sy}, {0.0, 1.0, 0.0}, {-sy, 0.0, cy}};
 }
-template <typename Float = double>
-Mat3x3<Float> RotY(const Float &y) {
-    Mat3x3<Float> C;
-    RotY(C, y);
-    return C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> RotY(const T &y) {
+  Eigen::Matrix<T, 3, 3> C;
+  RotY(C, y);
+  return C;
 }
 
 //! === ROTZ ===
@@ -245,17 +264,17 @@ Mat3x3<Float> RotY(const Float &y) {
 /// @param C    3x3 DCM
 /// @param z    euler angle ]radians]
 /// @returns    3x3 z-axis DCM rotation
-template <typename Float = double>
-void RotZ(Mat3x3<Float> &C, const Float &z) {
-    Float sz = std::sin(z);
-    Float cz = std::cos(z);
-    C = {{cz, -sz, 0.0}, {sz, cz, 0.0}, {0.0, 0.0, 1.0}};
+template <typename T = double>
+void RotZ(Eigen::Matrix<T, 3, 3> &C, const T &z) {
+  T sz = std::sin(z);
+  T cz = std::cos(z);
+  C = {{cz, -sz, 0.0}, {sz, cz, 0.0}, {0.0, 0.0, 1.0}};
 }
-template <typename Float = double>
-Mat3x3<Float> RotZ(const Float &z) {
-    Mat3x3<Float> C;
-    RotZ(C, z);
-    return C;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> RotZ(const T &z) {
+  Eigen::Matrix<T, 3, 3> C;
+  RotZ(C, z);
+  return C;
 }
 
 }  // namespace navtools

@@ -22,12 +22,11 @@ namespace navtools {
 
 //* ===== Physical Constants =================================================================== *//
 
+// DEFINE_FP_CONSTANT(PI, 3.141592653589793238462643383279502884);  //! pi
 template <typename T = double>
 inline constexpr std::complex<T> COMPLEX_I{
     static_cast<T>(0), static_cast<T>(1)};      //! imaginary value
-template <typename T = double>                  //
-inline constexpr T PI = std::numbers::pi_v<T>;  //! pi
-// DEFINE_FP_CONSTANT(PI, 3.141592653589793238462643383279502884);  //! pi
+DEFINE_FP_CONSTANT(PI, std::numbers::pi_v<T>);  //! pi
 DEFINE_FP_CONSTANT(HALF_PI, 0.5 * PI<T>);       //! pi/2
 DEFINE_FP_CONSTANT(TWO_PI, 2.0 * PI<T>);        //! 2*pi
 DEFINE_FP_CONSTANT(PI_SQU, PI<T>* PI<T>);       //! pi^2
@@ -35,9 +34,9 @@ DEFINE_FP_CONSTANT(SQRT_PI, std::sqrt(PI<T>));  //! sqrt(pi)
 DEFINE_FP_CONSTANT(RAD2DEG, 180.0 / PI<T>);     //! radians to degrees
 DEFINE_FP_CONSTANT(DEG2RAD, PI<T> / 180.0);     //! degrees to radians
 template <typename T = double>
-inline static const Vec3<T> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};
+inline static const Eigen::Vector<T, 3> LLA_RAD2DEG{RAD2DEG<T>, RAD2DEG<T>, 1.0};
 template <typename T = double>
-inline static const Vec3<T> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};
+inline static const Eigen::Vector<T, 3> LLA_DEG2RAD{DEG2RAD<T>, DEG2RAD<T>, 1.0};
 
 template <int Numerator, int Denominator = 1, typename T = double>
 constexpr T PiFraction() {
@@ -75,28 +74,13 @@ DEFINE_FP_CONSTANT(WGS84_E2, 0.00669437999019758);  //! WGS84 eccentricity squar
 DEFINE_FP_CONSTANT(WGS84_F, 0.00335281066477569);   //! WGS84 inverse flattening
 DEFINE_FP_CONSTANT(WGS84_OMEGA, 7.2921151467e-5);   //! WGS84 Earth rotational constant
 template <typename T = double>
-inline static const Vec3<T> WGS84_OMEGA_VEC{0.0, 0.0, WGS84_OMEGA<T>};
+inline static const Eigen::Vector<T, 3> WGS84_OMEGA_VEC{0.0, 0.0, WGS84_OMEGA<T>};
 template <typename T = double>
-inline static const Mat3x3<T> WGS84_OMEGA_SKEW{
+inline static const Eigen::Matrix<T, 3, 3> WGS84_OMEGA_SKEW{
     {0.0, 0.0, 0.0},
     {0.0, 0.0, +WGS84_OMEGA<T>},
     {0.0, -WGS84_OMEGA<T>, 0.0},
 };
-
-//* ===== SGP Models =========================================================================== *//
-
-DEFINE_FP_CONSTANT(SGP_AE, 1.0);                                         // distance per earth radii
-DEFINE_FP_CONSTANT(SGP_XKMPER, 6378.135);                                // km per earth radii
-DEFINE_FP_CONSTANT(SGP_S, 1.01222928);                                   // s
-DEFINE_FP_CONSTANT(SGP_QOMS2T, 1.88027916e-9);                           // (q0 - s)^4
-DEFINE_FP_CONSTANT(SGP_XKE, 7.43669161331734132e-2);                     // sqrt(G*M)
-template <typename T = double>                                           //
-inline constexpr T SGP_CK2 = 1.0 / 2.0 * J2<T> * SGP_AE<T> * SGP_AE<T>;  // 1/2 * J2 * a_E^2
-template <typename T = double>                                           //
-inline constexpr T SGP_CK4 =
-    -3.0 / 8.0 * J4<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T>;  // -3/8 * J4 * a_E^4
-template <typename T = double>                                           //
-inline constexpr T SGP_A3OVK2 = -J3<T> / SGP_CK2<T> * SGP_AE<T> * SGP_AE<T> * SGP_AE<T>;  //
 
 }  // namespace navtools
 
