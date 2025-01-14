@@ -36,7 +36,7 @@ void TransverseRadius(T &Re, const T &phi) {
 template <typename T = double>
 T TransverseRadius(const T &phi) {
   T Re;
-  TransverseRadius(Re, phi);
+  TransverseRadius<T>(Re, phi);
   return Re;
 }
 
@@ -54,7 +54,7 @@ void MeridianRadius(T &Rn, const T &phi) {
 template <typename T = double>
 T MeridianRadius(const T &phi) {
   T Rn;
-  MeridianRadius(Rn, phi);
+  MeridianRadius<T>(Rn, phi);
   return Rn;
 }
 
@@ -76,7 +76,7 @@ void GeocentricRadius(T &R_es_e, const T &phi) {
 template <typename T = double>
 T GeocentricRadius(const T &phi) {
   T R_es_e;
-  GeocentricRadius(R_es_e, phi);
+  GeocentricRadius<T>(R_es_e, phi);
   return R_es_e;
 }
 
@@ -96,7 +96,7 @@ void TransAndMerRadii(Eigen::Vector<T, 2> &radii, const T &phi) {
 template <typename T = double>
 Eigen::Vector<T, 2> TransAndMerRadii(const T &phi) {
   Eigen::Vector<T, 2> radii;
-  TransAndMerRadii(radii, phi);
+  TransAndMerRadii<T>(radii, phi);
   return radii;
 }
 
@@ -120,7 +120,7 @@ void RadiiOfCurvature(Eigen::Vector<T, 3> &radii, const T &phi) {
 template <typename T = double>
 Eigen::Vector<T, 3> RadiiOfCurvature(const T &phi) {
   Eigen::Vector<T, 3> radii;
-  RadiiOfCurvature(radii, phi);
+  RadiiOfCurvature<T>(radii, phi);
   return radii;
 }
 
@@ -148,17 +148,17 @@ void EarthRate(Eigen::Vector<T, 3> &w_ie_n, const T &phi, const std::string fram
 template <typename T = double>
 Eigen::Vector<T, 3> EarthRate(const T &phi, const std::string frame = "ned") {
   Eigen::Vector<T, 3> w_ie_n;
-  EarthRate(w_ie_n, phi, frame);
+  EarthRate<T>(w_ie_n, phi, frame);
   return w_ie_n;
 }
 template <typename T = double>
 void EarthRateSkew(Eigen::Matrix<T, 3, 3> &W_ie_n, const T &phi, const std::string frame = "ned") {
-  W_ie_n = Skew(EarthRate(phi, frame));
+  W_ie_n = Skew<T>(EarthRate<T>(phi, frame));
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> EarthRateSkew(const T &phi, const std::string frame = "ned") {
   Eigen::Matrix<T, 3, 3> W_ie_n;
-  EarthRateSkew(W_ie_n, phi, frame);
+  EarthRateSkew<T>(W_ie_n, phi, frame);
   return W_ie_n;
 }
 
@@ -176,7 +176,7 @@ void TransportRate(
     const Eigen::Vector<T, 3> &lla,
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
-  Eigen::Vector<T, 2> radii = TransAndMerRadii(lla(0));
+  Eigen::Vector<T, 2> radii = TransAndMerRadii<T>(lla(0));
   if (frame == "ned") {
     T ve_Reh = v_nb_e(1) / (radii(0) + lla(2));    // ve / (Re + h)
     w_en_n(0) = ve_Reh;                            // ve / (Re + h)
@@ -195,7 +195,7 @@ Eigen::Vector<T, 3> TransportRate(
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
   Eigen::Vector<T, 3> w_en_n;
-  TransportRate(w_en_n, lla, v_nb_e, frame);
+  TransportRate<T>(w_en_n, lla, v_nb_e, frame);
   return w_en_n;
 }
 template <typename T = double>
@@ -204,7 +204,7 @@ void TransportRateSkew(
     const Eigen::Vector<T, 3> &lla,
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
-  W_en_n = Skew(TransportRate(lla, v_nb_e, frame));
+  W_en_n = Skew<T>(TransportRate<T>(lla, v_nb_e, frame));
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> TransportRateSkew(
@@ -212,7 +212,7 @@ Eigen::Matrix<T, 3, 3> TransportRateSkew(
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
   Eigen::Matrix<T, 3, 3> W_en_n;
-  TransportRateSkew(W_en_n, lla, v_nb_e, frame);
+  TransportRateSkew<T>(W_en_n, lla, v_nb_e, frame);
   return W_en_n;
 }
 
@@ -229,9 +229,9 @@ void CoriolisRate(
     const Eigen::Vector<T, 3> &lla,
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
-  Eigen::Vector<T, 3> w_ie_n = EarthRate(lla(0), frame);
-  Eigen::Vector<T, 3> w_en_n = TransportRate(lla, v_nb_e, frame);
-  coriolis = skew(w_en_n + 2.0 * w_ie_n) * v_nb_e;
+  Eigen::Vector<T, 3> w_ie_n = EarthRate<T>(lla(0), frame);
+  Eigen::Vector<T, 3> w_en_n = TransportRate<T>(lla, v_nb_e, frame);
+  coriolis = skew<T>(w_en_n + 2.0 * w_ie_n) * v_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> CoriolisRate(
@@ -239,7 +239,7 @@ Eigen::Vector<T, 3> CoriolisRate(
     const Eigen::Vector<T, 3> &v_nb_e,
     const std::string frame = "ned") {
   Eigen::Vector<T, 3> coriolis;
-  CoriolisRate(coriolis, lla, v_nb_e, frame);
+  CoriolisRate<T>(coriolis, lla, v_nb_e, frame);
   return coriolis;
 }
 
@@ -259,7 +259,7 @@ void Somigliana(T &g0, const T &phi) {
 template <typename T = double>
 T Somigliana(const T &phi) {
   T g0;
-  Somigliana(g0, phi);
+  Somigliana<T>(g0, phi);
   return g0;
 }
 
@@ -301,7 +301,7 @@ void LocalGravity(
 template <typename T = double>
 Eigen::Vector<T, 3> LocalGravity(const Eigen::Vector<T, 3> &lla, const std::string frame = "ned") {
   Eigen::Vector<T, 3> g;
-  LocalGravity(g, lla, frame);
+  LocalGravity<T>(g, lla, frame);
   return g;
 }
 
@@ -332,12 +332,12 @@ void EcefGravity(
 template <typename T = double>
 void EcefGravity(Eigen::Vector<T, 3> &g, const Eigen::Vector<T, 3> &xyz) {
   Eigen::Vector<T, 3> gamma;
-  EcefGravity(g, gamma, xyz);
+  EcefGravity<T>(g, gamma, xyz);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> EcefGravity(const Eigen::Vector<T, 3> &xyz) {
   Eigen::Vector<T, 3> g;
-  EcefGravity(g, xyz);
+  EcefGravity<T>(g, xyz);
   return g;
 }
 
@@ -356,7 +356,7 @@ void CalcRange(T &r, const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3
 template <typename T = double>
 T CalcRange(const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3> &user_xyz) {
   T r;
-  CalcRange(r, sv_xyz, user_xyz);
+  CalcRange<T>(r, sv_xyz, user_xyz);
   return r;
 }
 
@@ -378,7 +378,7 @@ template <typename T = double>
 Eigen::Vector<T, 3> CalcUnitVec(
     const Eigen::Vector<T, 3> &sv_xyz, const Eigen::Vector<T, 3> &user_xyz) {
   Eigen::Vector<T, 3> u;
-  CalcUnitVec(u, sv_xyz, user_xyz);
+  CalcUnitVec<T>(u, sv_xyz, user_xyz);
   return u;
 }
 
@@ -421,7 +421,7 @@ T CalcRangeRate(
     const Eigen::Vector<T, 3> &sv_vel,
     const Eigen::Vector<T, 3> &user_vel) {
   T rr;
-  CalcRangeRate(rr, u, sv_vel, user_vel);
+  CalcRangeRate<T>(rr, u, sv_vel, user_vel);
   return rr;
 }
 

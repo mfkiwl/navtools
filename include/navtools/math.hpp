@@ -36,7 +36,7 @@ void Skew(Eigen::Matrix<T, 3, 3> &M, const Eigen::Vector<T, 3> &v) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> Skew(const Eigen::Vector<T, 3> &v) {
   Eigen::Matrix<T, 3, 3> M;
-  Skew(M, v);
+  Skew<T>(M, v);
   return M;
 }
 
@@ -52,7 +52,7 @@ void DeSkew(Eigen::Vector<T, 3> &v, const Eigen::Matrix<T, 3, 3> &M) {
 template <typename T = double>
 Eigen::Vector<T, 3> DeSkew(const Eigen::Matrix<T, 3, 3> &M) {
   Eigen::Vector<T, 3> v;
-  DeSkew(v, M);
+  DeSkew<T>(v, M);
   return v;
 }
 
@@ -100,7 +100,7 @@ constexpr void CircMod(T &x, const T y) {
 /// @returns    Wrapped/normalized angles [radians]
 template <typename T = double>
 void CircMod2Pi(T &x) {
-  CircMod(x, TWO_PI<T>);
+  CircMod<T>(x, TWO_PI<T>);
 }
 
 //! === WRAPPITOPI ===
@@ -109,7 +109,7 @@ void CircMod2Pi(T &x) {
 /// @returns    Wrapped/normalized angles [radians]
 template <typename T = double>
 void WrapPiToPi(T &x) {
-  CircMod2Pi(x);
+  CircMod2Pi<T>(x);
   if (x > PI<T>) {
     x -= TWO_PI<T>;
   }
@@ -130,8 +130,8 @@ void WrapEulerAngles(Eigen::Vector<T, 3> &x) {
     x(1) = -PI<T> - x(1);
     x(2) += PI<T>;
   }
-  WrapPiToPi(x(0));
-  WrapPiToPi(x(2));
+  WrapPiToPi<T>(x(0));
+  WrapPiToPi<T>(x(2));
 }
 
 //! === RAD2DEG ===
@@ -169,9 +169,9 @@ template <typename T>
 Eigen::Matrix<T, 4, 4> quatmat(const Eigen::Vector<T, 4> &q) {
   return Eigen::Matrix<T, 4, 4>{
       {q(0), -q(1), -q(2), -q(3)},
-      {q(1), q(0), -q(3), q(2)},
-      {q(2), q(3), q(0), -q(1)},
-      {q(3), -q(2), q(1), q(0)}};
+      {q(1), q(0), q(3), -q(2)},
+      {q(2), -q(3), q(0), q(1)},
+      {q(3), q(2), -q(1), q(0)}};
 }
 
 //! === QUATDOT ===
@@ -262,7 +262,7 @@ void dcmnorm(Eigen::Matrix<T, 3, 3> &R) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Vector<T, 3> &vec) {
   T vec_norm = vec.norm();
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew(vec / vec_norm);
+  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec / vec_norm);
   return Eigen::Matrix<T, 3, 3>::Identity() + (std::sin(vec_norm) * skew_sym) +
          ((1.0 - std::cos(vec_norm)) * skew_sym * skew_sym);
 }
@@ -281,17 +281,29 @@ Eigen::Matrix<T, 3, 3> Rodrigues(const Eigen::Vector<T, 3> &vec, const T &vec_no
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Vector<T, 3> &vec) {
   T vec_norm = vec.norm();
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew(vec);
+  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
   T norm_squared = vec_norm * vec_norm;
   return Eigen::Matrix<T, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
          ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
 }
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> Rodrigues4(const Eigen::Vector<T, 3> &vec, const T &vec_norm) {
-  Eigen::Matrix<T, 3, 3> skew_sym = Skew(vec);
+  Eigen::Matrix<T, 3, 3> skew_sym = Skew<T>(vec);
   T norm_squared = vec_norm * vec_norm;
   return Eigen::Matrix<T, 3, 3>::Identity() + ((1.0 - (norm_squared / 6.0)) * skew_sym) +
          ((0.5 - (norm_squared / 24.0)) * skew_sym * skew_sym);
+}
+
+//! === SCALAR2EXPM ===
+// @brief         Converts scalar value into 2x2 matrix corresponding to
+//                rotating by the value in radians (positive CCW)
+// @param scalar  rotation angle as some kind of floating point type
+// @returns       2x2 rotation matrix
+template <typename T = double>
+Eigen::Matrix<T, 2, 2> scalar2expm(const T &scalar) {
+  T cs = std::cos(scalar);
+  T ss = std::sin(scalar);
+  return Eigen::Matrix<T, 2, 2>({{cs, -ss}, {ss, cs}});
 }
 
 //! === VEC2EXPM ===
@@ -302,10 +314,14 @@ template <typename T = double>
 Eigen::Matrix<T, 3, 3> vec2expm(const Eigen::Vector<T, 3> &vec) {
   T vec_norm = vec.norm();
   if (vec_norm < 0.02) {
-    return Rodrigues4(vec, vec_norm);
+    return Rodrigues4<T>(vec, vec_norm);
   } else {
-    return Rodrigues(vec, vec_norm);
+    return Rodrigues<T>(vec, vec_norm);
   }
+}
+template <typename T = double>
+auto vec2expm(const T &scalar) {
+  return scalar2expm(scalar);
 }
 
 //! === EXPM2VEC ===
@@ -318,7 +334,7 @@ Eigen::Vector<T, 3> expm2vec(const Eigen::Matrix<T, 3, 3> &mat) {
   if (phi == 0.0) {
     return Eigen::Vector<T, 3>::Zero();
   }
-  return phi * DeSkew(mat - mat.transpose()) / (2.0 * std::sin(phi));
+  return phi * DeSkew<T>(mat - mat.transpose()) / (2.0 * std::sin(phi));
 }
 
 //* ===== Signal to Noise ======================================================================
@@ -337,7 +353,7 @@ void watt2db(T &db, const T &w) {
 template <typename T = double>
 T watt2db(const T &w) {
   T db;
-  watt2db(db, w);
+  watt2db<T>(db, w);
   return db;
 }
 
@@ -353,7 +369,7 @@ void db2watt(T &w, const T &db) {
 template <typename T = double>
 T db2watt(const T &db) {
   T w;
-  db2watt(w, db);
+  db2watt<T>(w, db);
   return w;
 }
 
@@ -369,7 +385,7 @@ void volt2db(T &db, const T &v) {
 template <typename T = double>
 T volt2db(const T &v) {
   T db;
-  volt2db(db, v);
+  volt2db<T>(db, v);
   return db;
 }
 
@@ -385,7 +401,7 @@ void db2volt(T &v, const T db) {
 template <typename T = double>
 T db2volt(const T &db) {
   T v;
-  db2volt(v, db);
+  db2volt<T>(v, db);
   return v;
 }
 
@@ -403,7 +419,7 @@ void cn02snr(T &snr, const T &cn0, const T &fe_bw, const T &temp = 290.0, const 
 template <typename T = double>
 T cn02snr(const T &cn0, const T &fe_bw, const T &temp = 290.0, const T &eta = 0.0) {
   T snr;
-  cn02snr(snr, cn0, fe_bw, temp, eta);
+  cn02snr<T>(snr, cn0, fe_bw, temp, eta);
   return snr;
 }
 
@@ -421,7 +437,7 @@ void snr2cn0(T &cn0, const T &snr, const T &fe_bw, const T &temp = 290.0, const 
 template <typename T = double>
 T snr2cn0(const T &snr, const T &fe_bw, const T &temp = 290.0, const T &eta = 0.0) {
   T cn0;
-  snr2cn0(cn0, snr, fe_bw, temp, eta);
+  snr2cn0<T>(cn0, snr, fe_bw, temp, eta);
   return cn0;
 }
 

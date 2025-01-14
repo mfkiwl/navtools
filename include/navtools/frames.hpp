@@ -18,8 +18,6 @@
 #include <navtools/constants.hpp>
 #include <navtools/types.hpp>
 
-#include "types.hpp"
-
 namespace navtools {
 
 //* ===== Direction Cosine Matrices ============================================================ *//
@@ -42,7 +40,7 @@ void eci2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const T &dt) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> eci2ecefDcm(const T &dt) {
   Eigen::Matrix<T, 3, 3> C;
-  eci2ecefDcm(C, dt);
+  eci2ecefDcm<T>(C, dt);
   return C;
 }
 
@@ -67,7 +65,7 @@ void eci2nedDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> eci2nedDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
   Eigen::Matrix<T, 3, 3> C;
-  eci2nedDcm(C, lla, dt);
+  eci2nedDcm<T>(C, lla, dt);
   return C;
 }
 
@@ -93,7 +91,7 @@ template <typename T = double>
 Eigen::Matrix<T,3,3> eci2enuDcm(const Eigen::Vector<T,3> &lla, const T &dt)
 {
   Eigen::Matrix<T,3,3> C;
-  eci2enuDcm(C, lla, dt);
+  eci2enuDcm<T>(C, lla, dt);
   return C;
 }
 
@@ -116,7 +114,7 @@ void ecef2eciDcm(Eigen::Matrix<T,3,3> &C, const T &dt)
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> ecef2eciDcm(const T &dt) {
   Eigen::Matrix<T, 3, 3> C;
-  ecef2eciDcm(C, dt);
+  ecef2eciDcm<T>(C, dt);
   return C;
 }
 
@@ -139,7 +137,7 @@ void ecef2nedDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> ecef2nedDcm(const Eigen::Vector<T, 3> &lla) {
   Eigen::Matrix<T, 3, 3> C;
-  ecef2nedDcm(C, lla);
+  ecef2nedDcm<T>(C, lla);
   return C;
 }
 
@@ -147,27 +145,22 @@ Eigen::Matrix<T, 3, 3> ecef2nedDcm(const Eigen::Vector<T, 3> &lla) {
 /// @brief      Earth-Centered-Earth-Fixed to East-North-Up direction cosine matrix
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    3x3 ECEF->ENU direction cosine matrix
-template <typename Derived1, typename Derived2>
-void ecef2enuDcm(DenseBase<Derived1> &C, const DenseBase<Derived2> &lla) {
-  ASSERT_EIGEN_OBJ_SIZE(Derived1, C, 3, 3);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2, lla, 3, 1);
-  typedef typename Derived1::Scalar T;
-
+template <typename T = double>
+void ecef2enuDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
   T sin_phi = std::sin(lla(0));
   T cos_phi = std::cos(lla(0));
   T sin_lam = std::sin(lla(1));
   T cos_lam = std::cos(lla(1));
   // clang-format off
-  C.derived() <<           -sin_lam,            cos_lam,     0.0,
-                 -sin_phi * cos_lam, -sin_phi * sin_lam, cos_phi,
-                  cos_phi * cos_lam,  cos_phi * sin_lam, sin_phi;
+  C <<           -sin_lam,            cos_lam,     0.0,
+       -sin_phi * cos_lam, -sin_phi * sin_lam, cos_phi,
+        cos_phi * cos_lam,  cos_phi * sin_lam, sin_phi;
   // clang-format on
 }
-template <typename Derived>
-auto ecef2enuDcm(const DenseBase<Derived> &lla) {
-  typedef typename Derived::Scalar T;
+template <typename T = double>
+Eigen::Matrix<T, 3, 3> ecef2enuDcm(const Eigen::Vector<T, 3> &lla) {
   Eigen::Matrix<T, 3, 3> C;
-  ecef2enuDcm(C, lla);
+  ecef2enuDcm<T>(C, lla);
   return C;
 }
 
@@ -192,7 +185,7 @@ void ned2eciDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> ned2eciDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
   Eigen::Matrix<T, 3, 3> C;
-  ned2eciDcm(C, lla, dt);
+  ned2eciDcm<T>(C, lla, dt);
   return C;
 }
 
@@ -215,7 +208,7 @@ void ned2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> ned2ecefDcm(const Eigen::Vector<T, 3> &lla) {
   Eigen::Matrix<T, 3, 3> C;
-  ned2ecefDcm(C, lla);
+  ned2ecefDcm<T>(C, lla);
   return C;
 }
 
@@ -229,7 +222,7 @@ void ned2enuDcm(Eigen::Matrix<T, 3, 3> &C) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> ned2enuDcm() {
   Eigen::Matrix<T, 3, 3> C;
-  ned2enuDcm(C);
+  ned2enuDcm<T>(C);
   return C;
 }
 
@@ -254,7 +247,7 @@ void enu2eciDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla, const
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> enu2eciDcm(const Eigen::Vector<T, 3> &lla, const T &dt) {
   Eigen::Matrix<T, 3, 3> C;
-  enu2eciDcm(C, lla, dt);
+  enu2eciDcm<T>(C, lla, dt);
   return C;
 }
 
@@ -277,7 +270,7 @@ void enu2ecefDcm(Eigen::Matrix<T, 3, 3> &C, const Eigen::Vector<T, 3> &lla) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> enu2ecefDcm(const Eigen::Vector<T, 3> &lla) {
   Eigen::Matrix<T, 3, 3> C;
-  enu2ecefDcm(C, lla);
+  enu2ecefDcm<T>(C, lla);
   return C;
 }
 
@@ -291,7 +284,7 @@ void enu2nedDcm(Eigen::Matrix<T, 3, 3> &C) {
 template <typename T = double>
 Eigen::Matrix<T, 3, 3> enu2nedDcm() {
   Eigen::Matrix<T, 3, 3> C;
-  enu2nedDcm(C);
+  enu2nedDcm<T>(C);
   return C;
 }
 
@@ -305,14 +298,14 @@ Eigen::Matrix<T, 3, 3> enu2nedDcm() {
 /// @returns    ECI position
 template <typename T = double>
 void lla2eci(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla, const T &dt) {
-  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> xyz = lla2ecef<T>(lla);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * xyz;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> lla2eci(const Eigen::Vector<T, 3> &lla, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  lla2eci(eci, lla, dt);
+  lla2eci<T>(eci, lla, dt);
   return eci;
 }
 
@@ -321,12 +314,8 @@ Eigen::Vector<T, 3> lla2eci(const Eigen::Vector<T, 3> &lla, const T &dt) {
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla  3x1 Geodetic Latitude, Longitude, Height [rad, rad, m]
 /// @returns    ECEF position
-template <typename Derived1, typename Derived2>
-void lla2ecef(DenseBase<Derived1> &xyz, const DenseBase<Derived2> &lla) {
-  ASSERT_EIGEN_OBJ_SIZE(Derived1, xyz, 3, 1);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2, lla, 3, 1);
-  typedef typename Derived1::Scalar T;
-
+template <typename T = double>
+void lla2ecef(Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla) {
   T sin_phi = std::sin(lla(0));
   T cos_phi = std::cos(lla(0));
   T sin_lam = std::sin(lla(1));
@@ -338,11 +327,10 @@ void lla2ecef(DenseBase<Derived1> &xyz, const DenseBase<Derived2> &lla) {
   xyz(1) = (Re + h) * cos_phi * sin_lam;
   xyz(2) = (Re * (1.0 - WGS84_E2<T>)+h) * sin_phi;
 }
-template <typename Derived>
-auto lla2ecef(const DenseBase<Derived> &lla) {
-  typedef typename Derived::Scalar T;
+template <typename T = double>
+Eigen::Vector<T, 3> lla2ecef(const Eigen::Vector<T, 3> &lla) {
   Eigen::Vector<T, 3> xyz;
-  lla2ecef(xyz, lla);
+  lla2ecef<T>(xyz, lla);
   return xyz;
 }
 
@@ -355,15 +343,15 @@ auto lla2ecef(const DenseBase<Derived> &lla) {
 template <typename T = double>
 void lla2ned(
     Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
-  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
+  Eigen::Vector<T, 3> xyz = lla2ecef<T>(lla);
   ned = C_e_n * (xyz - xyz0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> lla2ned(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> ned;
-  lla2ned(ned, lla, lla0);
+  lla2ned<T>(ned, lla, lla0);
   return ned;
 }
 
@@ -376,15 +364,15 @@ Eigen::Vector<T, 3> lla2ned(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<
 template <typename T = double>
 void lla2enu(
     Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
-  Eigen::Vector<T, 3> xyz = lla2ecef(lla);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
+  Eigen::Vector<T, 3> xyz = lla2ecef<T>(lla);
   enu = C_e_n * (xyz - xyz0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> lla2enu(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> enu;
-  lla2ned(enu, lla, lla0);
+  lla2enu<T>(enu, lla, lla0);
   return enu;
 }
 
@@ -397,7 +385,7 @@ Eigen::Vector<T, 3> lla2enu(const Eigen::Vector<T, 3> &lla, const Eigen::Vector<
 template <typename T = double>
 void lla2aer(
     Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &llaR, const Eigen::Vector<T, 3> &llaT) {
-  Eigen::Vector<T, 3> enu = lla2enu(llaT, llaR);
+  Eigen::Vector<T, 3> enu = lla2enu<T>(llaT, llaR);
   aer(2) = enu.norm();
   aer(1) = std::asin(enu(2) / aer(2));
   aer(0) = std::atan2(enu(0), enu(1));
@@ -405,7 +393,7 @@ void lla2aer(
 template <typename T = double>
 Eigen::Vector<T, 3> lla2aer(const Eigen::Vector<T, 3> &llaR, const Eigen::Vector<T, 3> &llaT) {
   Eigen::Vector<T, 3> aer;
-  lla2aer(aer, llaR, llaT);
+  lla2aer<T>(aer, llaR, llaT);
   return aer;
 }
 
@@ -417,13 +405,13 @@ Eigen::Vector<T, 3> lla2aer(const Eigen::Vector<T, 3> &llaR, const Eigen::Vector
 /// @returns    ECEF position
 template <typename T = double>
 void eci2ecef(Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &eci, const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm<T>(dt);
   xyz = C_i_e * eci;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2ecef(const Eigen::Vector<T, 3> &eci, const T &dt) {
   Eigen::Vector<T, 3> xyz;
-  eci2ecef(xyz, eci, dt);
+  eci2ecef<T>(xyz, eci, dt);
   return xyz;
 }
 
@@ -435,13 +423,13 @@ Eigen::Vector<T, 3> eci2ecef(const Eigen::Vector<T, 3> &eci, const T &dt) {
 /// @returns    lla position
 template <typename T = double>
 void eci2lla(Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &eci, const T &dt) {
-  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
-  lla = ecef2lla(xyz);
+  Eigen::Vector<T, 3> xyz = eci2ecef<T>(eci, dt);
+  lla = ecef2lla<T>(xyz);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2lla(const Eigen::Vector<T, 3> &eci, const T &dt) {
   Eigen::Vector<T, 3> lla;
-  eci2lla(lla, eci, dt);
+  eci2lla<T>(lla, eci, dt);
   return lla;
 }
 
@@ -458,14 +446,14 @@ void eci2ned(
     const Eigen::Vector<T, 3> &eci,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
-  ned = ecef2ned(xyz, lla0);
+  Eigen::Vector<T, 3> xyz = eci2ecef<T>(eci, dt);
+  ned = ecef2ned<T>(xyz, lla0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2ned(
     const Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla0, const T &dt) {
   Eigen::Vector<T, 3> ned;
-  eci2ned(ned, eci, lla0, dt);
+  eci2ned<T>(ned, eci, lla0, dt);
   return ned;
 }
 
@@ -482,14 +470,14 @@ void eci2enu(
     const Eigen::Vector<T, 3> &eci,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> xyz = eci2ecef(eci, dt);
-  enu = ecef2enu(xyz, lla0);
+  Eigen::Vector<T, 3> xyz = eci2ecef<T>(eci, dt);
+  enu = ecef2enu<T>(xyz, lla0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2enu(
     const Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &lla0, const T &dt) {
   Eigen::Vector<T, 3> enu;
-  eci2enu(enu, eci, lla0, dt);
+  eci2enu<T>(enu, eci, lla0, dt);
   return enu;
 }
 
@@ -506,13 +494,13 @@ void eci2aer(
     const Eigen::Vector<T, 3> &eciR,
     const Eigen::Vector<T, 3> &eciT,
     const T &dt) {
-  aer = ecef2aer(eci2ecef(eciT, dt), eci2ecef(eciR, dt));
+  aer = ecef2aer<T>(eci2ecef<T>(eciT, dt), eci2ecef<T>(eciR, dt));
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2aer(
     const Eigen::Vector<T, 3> &eciR, const Eigen::Vector<T, 3> &eciT, const T &dt) {
   Eigen::Vector<T, 3> aer;
-  eci2aer(aer, eciR, eciT, dt);
+  eci2aer<T>(aer, eciR, eciT, dt);
   return aer;
 }
 
@@ -524,13 +512,13 @@ Eigen::Vector<T, 3> eci2aer(
 /// @returns    ECEF position
 template <typename T = double>
 void ecef2eci(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &xyz, const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * xyz;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2eci(const Eigen::Vector<T, 3> &xyz, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ecef2eci(eci, xyz, dt);
+  ecef2eci<T>(eci, xyz, dt);
   return eci;
 }
 
@@ -539,12 +527,8 @@ Eigen::Vector<T, 3> ecef2eci(const Eigen::Vector<T, 3> &xyz, const T &dt) {
 /// @param xyz  3x1 ECEF position [m]
 /// @param lla  3x1 LLA position [rad, rad, m]
 /// @returns    lla position
-template <typename Derived1, typename Derived2>
-void ecef2lla(DenseBase<Derived1> &lla, const DenseBase<Derived2> &xyz) {
-  ASSERT_EIGEN_OBJ_SIZE(Derived1, lla, 3, 1);
-  ASSERT_EIGEN_OBJ_SIZE(Derived2, xyz, 3, 1);
-  typedef typename Derived1::Scalar T;
-
+template <typename T = double>
+void ecef2lla(Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &xyz) {
   const T &x = xyz(0);
   const T &y = xyz(1);
   const T &z = xyz(2);
@@ -569,11 +553,10 @@ void ecef2lla(DenseBase<Derived1> &lla, const DenseBase<Derived2> &xyz) {
   lla(2) = (beta - WGS84_R0<T> * t) * std::cos(lla(0)) +
            (z - sign_z * WGS84_R0<T> * sqrt_1_e2) * std::sin(lla(0));  // (Groves C.38)
 }
-template <typename Derived>
-auto ecef2lla(const DenseBase<Derived> &xyz) {
-  typedef typename Derived::Scalar T;
+template <typename T = double>
+Eigen::Vector<T, 3> ecef2lla(const Eigen::Vector<T, 3> &xyz) {
   Eigen::Vector<T, 3> lla;
-  ecef2lla(lla, xyz);
+  ecef2lla<T>(lla, xyz);
   return lla;
 }
 
@@ -586,14 +569,14 @@ auto ecef2lla(const DenseBase<Derived> &xyz) {
 template <typename T = double>
 void ecef2ned(
     Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
   ned = C_e_n * (xyz - xyz0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2ned(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> ned;
-  ecef2ned(ned, xyz, lla0);
+  ecef2ned<T>(ned, xyz, lla0);
   return ned;
 }
 
@@ -606,14 +589,14 @@ Eigen::Vector<T, 3> ecef2ned(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector
 template <typename T = double>
 void ecef2enu(
     Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
-  Eigen::Vector<T, 3> xyz0 = lla2ecef(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
+  Eigen::Vector<T, 3> xyz0 = lla2ecef<T>(lla0);
   enu = C_e_n * (xyz - xyz0);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2enu(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> enu;
-  ecef2enu(enu, xyz, lla0);
+  ecef2enu<T>(enu, xyz, lla0);
   return enu;
 }
 
@@ -626,8 +609,8 @@ Eigen::Vector<T, 3> ecef2enu(const Eigen::Vector<T, 3> &xyz, const Eigen::Vector
 template <typename T = double>
 void ecef2aer(
     Eigen::Vector<T, 3> &aer, const Eigen::Vector<T, 3> &xyzR, const Eigen::Vector<T, 3> &xyzT) {
-  Eigen::Vector<T, 3> lla0 = ecef2lla(xyzR);
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Vector<T, 3> lla0 = ecef2lla<T>(xyzR);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
   Eigen::Vector<T, 3> enu = C_e_n * (xyzT - xyzR);
 
   aer(2) = enu.norm();
@@ -637,7 +620,7 @@ void ecef2aer(
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2aer(const Eigen::Vector<T, 3> &xyzR, const Eigen::Vector<T, 3> &xyzT) {
   Eigen::Vector<T, 3> aer;
-  ecef2aer(aer, xyzR, xyzT);
+  ecef2aer<T>(aer, xyzR, xyzT);
   return aer;
 }
 
@@ -654,15 +637,15 @@ void ned2eci(
     const Eigen::Vector<T, 3> &ned,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> xyz = ned2ecef(ned, lla0);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> xyz = ned2ecef<T>(ned, lla0);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * xyz;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2eci(
     const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ned2eci(eci, ned, lla0, dt);
+  ned2eci<T>(eci, ned, lla0, dt);
   return eci;
 }
 
@@ -675,13 +658,13 @@ Eigen::Vector<T, 3> ned2eci(
 template <typename T = double>
 void ned2ecef(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
-  xyz = lla2ecef(lla0) + C_n_e * ned;
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
+  xyz = lla2ecef<T>(lla0) + C_n_e * ned;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2ecef(const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  ned2ecef(xyz, ned, lla0);
+  ned2ecef<T>(xyz, ned, lla0);
   return xyz;
 }
 
@@ -694,13 +677,13 @@ Eigen::Vector<T, 3> ned2ecef(const Eigen::Vector<T, 3> &ned, const Eigen::Vector
 template <typename T = double>
 void ned2lla(
     Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Vector<T, 3> xyz = ned2ecef(ned, lla0);
-  lla = ecef2lla(xyz);
+  Eigen::Vector<T, 3> xyz = ned2ecef<T>(ned, lla0);
+  lla = ecef2lla<T>(xyz);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2lla(const Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> lla;
-  ned2ecef(lla, ned, lla0);
+  ned2ecef<T>(lla, ned, lla0);
   return lla;
 }
 
@@ -721,7 +704,7 @@ void ned2aer(
 template <typename T = double>
 Eigen::Vector<T, 3> ned2aer(const Eigen::Vector<T, 3> &nedR, const Eigen::Vector<T, 3> &nedT) {
   Eigen::Vector<T, 3> aer;
-  ned2aer(aer, nedR, nedT);
+  ned2aer<T>(aer, nedR, nedT);
   return aer;
 }
 
@@ -738,15 +721,15 @@ void enu2eci(
     const Eigen::Vector<T, 3> &enu,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> xyz = enu2ecef(enu, lla0);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> xyz = enu2ecef<T>(enu, lla0);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * xyz;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> enu2eci(
     const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  enu2eci(eci, enu, lla0, dt);
+  enu2eci<T>(eci, enu, lla0, dt);
   return eci;
 }
 
@@ -759,13 +742,13 @@ Eigen::Vector<T, 3> enu2eci(
 template <typename T = double>
 void enu2ecef(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
-  xyz = lla2ecef(lla0) + C_n_e * enu;
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
+  xyz = lla2ecef<T>(lla0) + C_n_e * enu;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> enu2ecef(const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  enu2ecef(xyz, enu, lla0);
+  enu2ecef<T>(xyz, enu, lla0);
   return xyz;
 }
 
@@ -778,13 +761,13 @@ Eigen::Vector<T, 3> enu2ecef(const Eigen::Vector<T, 3> &enu, const Eigen::Vector
 template <typename T = double>
 void enu2lla(
     Eigen::Vector<T, 3> &lla, const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Vector<T, 3> xyz = enu2ecef(enu, lla0);
-  lla = ecef2lla(xyz);
+  Eigen::Vector<T, 3> xyz = enu2ecef<T>(enu, lla0);
+  lla = ecef2lla<T>(xyz);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> enu2lla(const Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> lla;
-  enu2ecef(lla, enu, lla0);
+  enu2lla<T>(lla, enu, lla0);
   return lla;
 }
 
@@ -805,7 +788,7 @@ void enu2aer(
 template <typename T = double>
 Eigen::Vector<T, 3> enu2aer(const Eigen::Vector<T, 3> &enuR, const Eigen::Vector<T, 3> &enuT) {
   Eigen::Vector<T, 3> aer;
-  ned2aer(aer, enuR, enuT);
+  enu2aer<T>(aer, enuR, enuT);
   return aer;
 }
 
@@ -824,14 +807,14 @@ void eci2ecefv(
     const Eigen::Vector<T, 3> &r_ib_i,
     const Eigen::Vector<T, 3> &v_ib_i,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm<T>(dt);
   xyz = C_i_e * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2ecefv(
     const Eigen::Vector<T, 3> &r_ib_i, const Eigen::Vector<T, 3> &v_ib_i, const T &dt) {
   Eigen::Vector<T, 3> xyz;
-  eci2ecefv(xyz, r_ib_i, v_ib_i, dt);
+  eci2ecefv<T>(xyz, r_ib_i, v_ib_i, dt);
   return xyz;
 }
 
@@ -850,7 +833,7 @@ void eci2nedv(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm<T>(lla0, dt);
   ned = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
 template <typename T = double>
@@ -860,7 +843,7 @@ Eigen::Vector<T, 3> eci2nedv(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> ned;
-  eci2nedv(ned, r_ib_i, v_ib_i, lla0, dt);
+  eci2nedv<T>(ned, r_ib_i, v_ib_i, lla0, dt);
   return ned;
 }
 
@@ -879,7 +862,7 @@ void eci2enuv(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm<T>(lla0, dt);
   enu = C_i_n * (v_ib_i - WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
 template <typename T = double>
@@ -889,7 +872,7 @@ Eigen::Vector<T, 3> eci2enuv(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> enu;
-  eci2enuv(enu, r_ib_i, v_ib_i, lla0, dt);
+  eci2enuv<T>(enu, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
 
@@ -906,14 +889,14 @@ void ecef2eciv(
     const Eigen::Vector<T, 3> &r_eb_e,
     const Eigen::Vector<T, 3> &v_eb_e,
     const T &dt) {
-  Eigen::Vector<T, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Vector<T, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * (v_eb_e - WGS84_OMEGA_SKEW<T> * r_eb_e);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2eciv(
     const Eigen::Vector<T, 3> &r_eb_e, const Eigen::Vector<T, 3> &v_eb_e, const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ecef2eciv(eci, r_eb_e, v_eb_e, dt);
+  ecef2eciv<T>(eci, r_eb_e, v_eb_e, dt);
   return eci;
 }
 
@@ -926,13 +909,13 @@ Eigen::Vector<T, 3> ecef2eciv(
 template <typename T = double>
 void ecef2nedv(
     Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
   ned = C_e_n * v_eb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2nedv(const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> ned;
-  ecef2nedv(ned, v_eb_e, lla0);
+  ecef2nedv<T>(ned, v_eb_e, lla0);
   return ned;
 }
 
@@ -945,13 +928,13 @@ Eigen::Vector<T, 3> ecef2nedv(const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Ve
 template <typename T = double>
 void ecef2enuv(
     Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
   enu = C_e_n * v_eb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2enuv(const Eigen::Vector<T, 3> &v_eb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> enu;
-  ecef2enuv(enu, v_eb_e, lla0);
+  ecef2enuv<T>(enu, v_eb_e, lla0);
   return enu;
 }
 
@@ -970,9 +953,9 @@ void ned2eciv(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm(lla0, dt);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
-  Eigen::Vector<T, 3> xyz = ned2ecef(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
+  Eigen::Vector<T, 3> xyz = ned2ecef<T>(r_nb_e, lla0);
   eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<T> * xyz;
 }
 template <typename T = double>
@@ -982,7 +965,7 @@ Eigen::Vector<T, 3> ned2eciv(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ned2eciv(eci, r_nb_e, v_nb_e, lla0, dt);
+  ned2eciv<T>(eci, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -995,13 +978,13 @@ Eigen::Vector<T, 3> ned2eciv(
 template <typename T = double>
 void ned2ecefv(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
   xyz = C_n_e * v_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2ecefv(const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  ned2ecefv(xyz, v_nb_e, lla0);
+  ned2ecefv<T>(xyz, v_nb_e, lla0);
   return xyz;
 }
 
@@ -1020,9 +1003,9 @@ void enu2eciv(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm(lla0, dt);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
-  Eigen::Vector<T, 3> xyz = ned2ecef(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
+  Eigen::Vector<T, 3> xyz = ned2ecef<T>(r_nb_e, lla0);
   eci = C_n_i * v_nb_e + C_e_i * WGS84_OMEGA_SKEW<T> * xyz;
 }
 template <typename T = double>
@@ -1032,7 +1015,7 @@ Eigen::Vector<T, 3> enu2eciv(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  enu2eciv(eci, r_nb_e, v_nb_e, lla0, dt);
+  enu2eciv<T>(eci, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -1045,13 +1028,13 @@ Eigen::Vector<T, 3> enu2eciv(
 template <typename T = double>
 void enu2ecefv(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
   xyz = C_n_e * v_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> enu2ecefv(const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  enu2ecefv(xyz, v_nb_e, lla0);
+  enu2ecefv<T>(xyz, v_nb_e, lla0);
   return xyz;
 }
 
@@ -1065,13 +1048,13 @@ Eigen::Vector<T, 3> enu2ecefv(const Eigen::Vector<T, 3> &v_nb_e, const Eigen::Ve
 /// @returns    ECEF angular velocity
 template <typename T = double>
 void eci2ecefw(Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_ib_i, const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm<T>(dt);
   xyz = C_i_e * (w_ib_i + WGS84_OMEGA_VEC<T>);
 }
 template <typename T = double>
 Eigen::Vector<T, 3> eci2ecefw(const Eigen::Vector<T, 3> &w_ib_i, const T &dt) {
   Eigen::Vector<T, 3> xyz;
-  eci2ecefw(xyz, w_ib_i, dt);
+  eci2ecefw<T>(xyz, w_ib_i, dt);
   return xyz;
 }
 
@@ -1092,7 +1075,7 @@ void eci2nedw(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_i_n = eci2nedDcm(lla0, dt);
+  Eigen::Vector<T, 3> C_i_n = eci2nedDcm<T>(lla0, dt);
 
   Eigen::Vector<T, 3> v_nb_e = eci2nedv(r_ib_i, v_ib_i, lla0, dt);
   T vn = v_nb_e(0);
@@ -1137,7 +1120,7 @@ void eci2enuw(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_i_n = eci2enuDcm(lla0, dt);
+  Eigen::Vector<T, 3> C_i_n = eci2enuDcm<T>(lla0, dt);
 
   Eigen::Vector<T, 3> v_nb_e = eci2enuv(r_ib_i, v_ib_i, lla0, dt);
   T vn = v_nb_e(0);
@@ -1173,7 +1156,7 @@ Eigen::Vector<T, 3> eci2enuw(
 /// @returns    ECI angular velocity
 template <typename T = double>
 void ecef2eciw(Eigen::Vector<T, 3> &eci, const Eigen::Vector<T, 3> &w_eb_e, const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
   eci = C_e_i * (w_eb_e + WGS84_OMEGA_VEC<T>);
 }
 template <typename T = double>
@@ -1192,7 +1175,7 @@ Eigen::Vector<T, 3> ecef2eciw(const Eigen::Vector<T, 3> &w_eb_e, const T &dt) {
 template <typename T = double>
 void ecef2nedw(
     Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
   ned = C_e_n * w_eb_e;
 }
 template <typename T = double>
@@ -1211,7 +1194,7 @@ Eigen::Vector<T, 3> ecef2nedw(const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Ve
 template <typename T = double>
 void ecef2enuw(
     Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &w_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
   enu = C_e_n * w_eb_e;
 }
 template <typename T = double>
@@ -1236,7 +1219,7 @@ void ned2eciw(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_n_i = ned2eciDcm(lla0, dt);
+  Eigen::Vector<T, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
 
   T vn = v_nb_e(0);
   T ve = v_nb_e(1);
@@ -1271,7 +1254,7 @@ Eigen::Vector<T, 3> ned2eciw(
 template <typename T = double>
 void ned2ecefw(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
   xyz = C_n_e * w_nb_e;
 }
 template <typename T = double>
@@ -1296,7 +1279,7 @@ void enu2eciw(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> C_n_i = ned2eciDcm(lla0, dt);
+  Eigen::Vector<T, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
 
   T vn = v_nb_e(0);
   T ve = v_nb_e(1);
@@ -1331,7 +1314,7 @@ Eigen::Vector<T, 3> enu2eciw(
 template <typename T = double>
 void enu2ecefw(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &w_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
   xyz = C_n_e * w_nb_e;
 }
 template <typename T = double>
@@ -1358,7 +1341,7 @@ void eci2ecefa(
     const Eigen::Vector<T, 3> &r_ib_i,
     const Eigen::Vector<T, 3> &v_ib_i,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm<T>(dt);
   xyz = C_i_e * (a_ib_i - 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
                  WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
@@ -1390,7 +1373,7 @@ void eci2neda(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2nedDcm<T>(lla0, dt);
   ned = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
                  WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
@@ -1423,7 +1406,7 @@ void eci2enua(
     const Eigen::Vector<T, 3> &v_ib_i,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_i_n = eci2enuDcm<T>(lla0, dt);
   enu = C_i_n * (a_ib_i + 2.0 * WGS84_OMEGA_SKEW<T> * v_ib_i +
                  WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_ib_i);
 }
@@ -1435,7 +1418,7 @@ Eigen::Vector<T, 3> eci2enua(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> enu;
-  eci2enua(enu, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
+  eci2enua<T>(enu, a_ib_i, r_ib_i, v_ib_i, lla0, dt);
   return enu;
 }
 
@@ -1454,7 +1437,7 @@ void ecef2ecia(
     const Eigen::Vector<T, 3> &r_eb_e,
     const Eigen::Vector<T, 3> &v_eb_e,
     const T &dt) {
-  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_i_e = eci2ecefDcm<T>(dt);
   eci = C_i_e * (a_eb_e - 2.0 * WGS84_OMEGA_SKEW<T> * v_eb_e +
                  WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T> * r_eb_e);
 }
@@ -1465,7 +1448,7 @@ Eigen::Vector<T, 3> ecef2ecia(
     const Eigen::Vector<T, 3> &v_eb_e,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ecef2ecia(eci, a_eb_e, r_eb_e, v_eb_e, dt);
+  ecef2ecia<T>(eci, a_eb_e, r_eb_e, v_eb_e, dt);
   return eci;
 }
 
@@ -1478,13 +1461,13 @@ Eigen::Vector<T, 3> ecef2ecia(
 template <typename T = double>
 void ecef2neda(
     Eigen::Vector<T, 3> &ned, const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2nedDcm<T>(lla0);
   ned = C_e_n * a_eb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2neda(const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> ned;
-  ecef2neda(ned, a_eb_e, lla0);
+  ecef2neda<T>(ned, a_eb_e, lla0);
   return ned;
 }
 
@@ -1497,13 +1480,13 @@ Eigen::Vector<T, 3> ecef2neda(const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Ve
 template <typename T = double>
 void ecef2enua(
     Eigen::Vector<T, 3> &enu, const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_e_n = ecef2enuDcm<T>(lla0);
   enu = C_e_n * a_eb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ecef2enua(const Eigen::Vector<T, 3> &a_eb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> enu;
-  ecef2enua(enu, a_eb_e, lla0);
+  ecef2enua<T>(enu, a_eb_e, lla0);
   return enu;
 }
 
@@ -1524,17 +1507,17 @@ void ned2ecia(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> r_eb_e = ned2ecef(r_nb_e, lla0);
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
+  Eigen::Vector<T, 3> r_eb_e = ned2ecef<T>(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
   T omega_sin_phi = WGS84_OMEGA<T> * std::sin(lla0(0));
   T omega_cos_phi = WGS84_OMEGA<T> * std::cos(lla0(0));
   Eigen::Matrix<T, 3, 3> omega_ie_n{
       {0.0, omega_cos_phi, 0.0}, {-omega_cos_phi, 0.0, -omega_sin_phi}, {0.0, omega_sin_phi, 0.0}};
-  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm(lla0, dt);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_n_i = ned2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
 
-  auto a_eb_e = C_n_e * a_nb_e;
-  auto v_eb_e = C_n_e * v_nb_e;
+  Eigen::Vector<T, 3> a_eb_e = C_n_e * a_nb_e;
+  Eigen::Vector<T, 3> v_eb_e = C_n_e * v_nb_e;
   eci = C_n_i * (a_eb_e + 2.0 * omega_ie_n * v_eb_e +
                  C_e_i * (WGS84_OMEGA_SKEW<T> * WGS84_OMEGA_SKEW<T>, *r_eb_e));
 }
@@ -1546,7 +1529,7 @@ Eigen::Vector<T, 3> ned2ecia(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  ned2ecia(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
+  ned2ecia<T>(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -1559,13 +1542,13 @@ Eigen::Vector<T, 3> ned2ecia(
 template <typename T = double>
 void ned2ecefa(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = ned2ecefDcm<T>(lla0);
   xyz = C_n_e * a_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> ned2ecefa(const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  ned2ecefa(xyz, a_nb_e, lla0);
+  ned2ecefa<T>(xyz, a_nb_e, lla0);
   return xyz;
 }
 
@@ -1586,14 +1569,14 @@ void enu2ecia(
     const Eigen::Vector<T, 3> &v_nb_e,
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
-  Eigen::Vector<T, 3> r_eb_e = enu2ecef(r_nb_e, lla0);
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
+  Eigen::Vector<T, 3> r_eb_e = enu2ecef<T>(r_nb_e, lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
   T omega_sin_phi = WGS84_OMEGA<T> * std::sin(lla0(0));
   T omega_cos_phi = WGS84_OMEGA<T> * std::cos(lla0(0));
   Eigen::Matrix<T, 3, 3> omega_ie_n{
       {0.0, 0.0, omega_cos_phi}, {0.0, 0.0, omega_sin_phi}, {-omega_cos_phi, -omega_sin_phi, 0.0}};
-  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm(lla0, dt);
-  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm(dt);
+  Eigen::Matrix<T, 3, 3> C_n_i = enu2eciDcm<T>(lla0, dt);
+  Eigen::Matrix<T, 3, 3> C_e_i = ecef2eciDcm<T>(dt);
 
   Eigen::Vector<T, 3> a_eb_e = C_n_e * a_nb_e;
   Eigen::Vector<T, 3> v_eb_e = C_n_e * v_nb_e;
@@ -1608,7 +1591,7 @@ Eigen::Vector<T, 3> enu2ecia(
     const Eigen::Vector<T, 3> &lla0,
     const T &dt) {
   Eigen::Vector<T, 3> eci;
-  enu2ecia(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
+  enu2ecia<T>(eci, a_nb_e, r_nb_e, v_nb_e, lla0, dt);
   return eci;
 }
 
@@ -1621,13 +1604,13 @@ Eigen::Vector<T, 3> enu2ecia(
 template <typename T = double>
 void enu2ecefa(
     Eigen::Vector<T, 3> &xyz, const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
-  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm(lla0);
+  Eigen::Matrix<T, 3, 3> C_n_e = enu2ecefDcm<T>(lla0);
   xyz = C_n_e * a_nb_e;
 }
 template <typename T = double>
 Eigen::Vector<T, 3> enu2ecefa(const Eigen::Vector<T, 3> &a_nb_e, const Eigen::Vector<T, 3> &lla0) {
   Eigen::Vector<T, 3> xyz;
-  enu2ecefa(xyz, a_nb_e, lla0);
+  enu2ecefa<T>(xyz, a_nb_e, lla0);
   return xyz;
 }
 

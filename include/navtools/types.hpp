@@ -13,7 +13,6 @@
 
 #include <Eigen/Dense>
 #include <cassert>
-#include <type_traits>
 
 #define DEFINE_FP_CONSTANT(name, value) \
   template <typename T = double>        \

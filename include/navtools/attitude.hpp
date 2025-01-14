@@ -16,7 +16,6 @@
 #include <Eigen/Dense>
 
 #include "navtools/constants.hpp"
-#include "navtools/types.hpp"
 
 namespace navtools {
 
